@@ -7,17 +7,17 @@
 
 ```bash
 cd ~/nixos-config
-nix flake update nixpkgs     # ① 只更新 nixpkgs（topgrade 自动链同款，不碰其他输入）
+nix flake update nixpkgs     # ① 只更新 nixpkgs；topgrade 的 nr -u 则更新全部输入
 nix fmt && nix flake check   # ② 质量门禁
 nix build .#nixosConfigurations.omen.config.system.build.toplevel  # ③ 预构建（不切换）
-sudo nixos-rebuild switch --flake ~/nixos-config#omen              # ④ 切换（nr 别名自带快照）
+nr                         # ④ 快照成功后切换；不再次更新输入
 ```
 
 - [ ] ③ 预构建通过（无新增 warning，STANDARDS §8）
-- [ ] ④ 切换后**重启会话**（niri 配置/HM 激活的变更才生效）
+- [ ] ④ 切换后**重启会话**（Umbriel 配置/HM 激活的变更才生效）
 - [ ] 实测：登录/解锁（Noctalia 内置锁屏，PAM 走系统 login 服务）、输入法候选框（fcitx5 双通道）、毛玻璃（blur）、
-      截图音效（screenshot-sound）、护眼（wlsunset 自动开启）
-- [ ] 变更合规：STANDARDS §4 IM 双作用域两处同步（locale.nix + niri.nix）
+      护眼（wlsunset 自动开启）
+- [ ] 变更合规：STANDARDS §4 IM 双作用域两处同步（input-method.nix + umbriel.nix）
 
 ## 历史破坏性变更档案（踩过才记）
 
@@ -41,5 +41,5 @@ sudo nixos-rebuild switch --flake ~/nixos-config#omen              # ④ 切换�
 
 - `home.stateVersion` **保持 24.05**（STANDARDS §3：首次使用值，不随 NixOS 版本升）
 - `startAsUserService = true` + wantedBy（上游 #3172 竞态修复，**不要动**）
-- IM 变量双作用域（STANDARDS §4）：locale.nix（系统层）+ niri.nix settings.environment
-- nixd 补全 expr 引用 `nixosConfigurations.omen`（改 flake.nix 顶部 my.hostname 自动跟随）
+- IM 变量双作用域（STANDARDS §4）：`modules/input-method.nix` + `umbriel.nix` 的 settings.environment。
+- nixd 配置共用 `home/modules/tools/nixd.nix`；工作区绝对路径来自 `config/user.nix` 的 `repository`，目标主机来自清单。VSCode 走 `nix.serverSettings.nixd`，Zed 走 `lsp.nixd.settings`（REF:2026-09-28-nixd-editor-completion）。

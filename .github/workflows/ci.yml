@@ -1,13 +1,3 @@
-# ============================================================
-# ci.yml —— NixOS 配置 CI（STANDARDS.md §7）
-# 触发：push 到 main + 所有 PR
-# 检查：git diff --check（空白错误门禁，第 1 步）
-#        + nix flake check（treefmt/statix/deadnix/pre-commit 全量）
-#        + nix fmt -- --fail-on-change（RFC 风格格式化门禁）
-# 说明：2026-08-29 私有包（fcclient/tomatodo）已移出仓库 → 无 path 输入，
-#       无需 override-input 占位，本机/CI 求值完全一致。
-# 不引入外部服务；仅官方/社区维护 action。
-# ============================================================
 name: CI
 
 on:
@@ -15,35 +5,53 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   flake-check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # 第 1 步（不依赖 Nix）：空白错误门禁
-      # 2026-08-21 教训：尾随空格曾漏进 home/modules/tools/ai.nix，
-      # nix fmt 虽能改写但 git 层面先拦截更省事（STANDARDS §7 第 3 步）
-      - name: Whitespace check
-        run: git diff --check
+      - name: Check changed whitespace
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT" == "pull_request" ]]; then
+            base=$(git merge-base "$PR_BASE" "$PR_HEAD")
+            head="$PR_HEAD"
+          else
+            head="$AFTER"
+            if [[ "$BEFORE" =~ ^0+$ ]]; then
+              base=$(git hash-object -t tree /dev/null)
+            else
+              git cat-file -e "${BEFORE}^{commit}" || git fetch origin "$BEFORE"
+              base="$BEFORE"
+            fi
+          fi
+          git diff --check "$base" "$head"
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v16
 
-      # GitHub 原生缓存（替代已弃用的 magic-nix-cache；无需外部账号/服务）
       - name: Nix cache
         uses: nix-community/cache-nix-action@v7
         with:
           primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock') }}
           restore-prefixes-first-match: nix-${{ runner.os }}-
 
-      # 标准修改流程质量门禁（STANDARDS §10）：flake check 全绿
-      # 注：2026-08-29 起无仓库外 path 输入（fcclient/tomatodo 已移出），无需 override-input
-      - name: Nix flake check
-        run: nix flake check
-
-      # 格式化门禁（STANDARDS §7）：RFC 风格，nix fmt 统一入口
-      # 注：treefmt 的 check 语义是 --fail-on-change（无 --check flag）
-      - name: Nix fmt check
+      - name: Check formatting
         run: nix fmt -- --fail-on-change
+
+      # 包含源码检查和组合求值；不等于完整系统构建或运行时验收。
+      - name: Check flake
+        run: nix flake check --no-write-lock-file

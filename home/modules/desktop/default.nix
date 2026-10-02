@@ -1,18 +1,14 @@
-# ============================================================
-# desktop/default.nix —— 桌面环境配置聚合（定位地图）
-# ============================================================
-{ ... }:
-
 {
   imports = [
-    ./niri.nix # 合成器核心
-    ./niri-animations.nix # 合成器动画（spring）
-    ./niri-binds.nix # 合成器快捷键
-    ./niri-rules.nix # 窗口/图层规则
+    ./umbriel.nix # 合成器、键位与窗口规则
     ./kitty.nix # 终端
     ./fcitx5.nix # 输入法
-    ./noctalia.nix # 桌面壳（含内置锁屏）
-    ./misc.nix # 桌面杂项（portal/mpv/satty/mimeapps）
-    ./packages.nix # 桌面工具与应用（纯安装）
+    ./noctalia.nix # 桌面壳与锁屏
+    ./xdg.nix # 用户目录与默认应用
+    ./mpv.nix # 视频播放
+    ./satty.nix # 截图标注
+    ./comfyui.nix # 壁纸 AI 放大（CUDA）
+    ./qq.nix # QQ 与 Wayland 参数
+    ./packages.nix # 其他应用与会话工具
   ];
 }

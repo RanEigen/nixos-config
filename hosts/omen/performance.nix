@@ -1,59 +1,43 @@
-# performance.nix —— 本机性能计算优化（HP OMEN 16 + 13900HX + 4060m）
-# 职责：CPU 调度（scx）/中断均衡/功耗策略（TLP）/交换（zram）/进程资源上限
-# 修改：调性能项 → 改这里；整组关闭 → options.omen.performance.enable = false
-# ============================================================
-{ config, lib, ... }:
-
-let
-  cfg = config.omen.performance;
-in
+# 本机 CPU 调度、功耗与资源限额；移除 import 即关闭本组策略。
+{ config, pkgs, ... }:
 {
-  options.omen.performance.enable = lib.mkEnableOption "本机性能计算优化（13900HX + 4060m）";
-
-  config = lib.mkIf cfg.enable {
-    # 本机性能全家桶（整组关闭：options.omen.performance.enable = false）
-    # - scx_lavd：交互负载 + 计算并行兼顾（13900HX P/E 核混合友好）
-    # - irqbalance：13900HX 24 核，避免单个 P-Core 被网卡/磁盘中断占满
-    # - TLP：AC = powersave governor + balance_performance EPP (REF:2026-08-25-coil-whine-cpu-governor)
-    # - zram：内存 50% 压缩交换（抗 OOM）｜fd 上限 65536（并行编译/大数据）
-    services = {
-      system76-scheduler = {
-        enable = true;
-      };
-
-      # 开启 scx 服务并选择 lavd 调度器（需要内核支持 sched_ext）
-      scx = {
-        enable = true;
-        scheduler = "scx_lavd";
-
-      };
-      irqbalance.enable = true;
-      tlp = {
-        enable = true;
-        settings = {
-          # 修复线圈啸叫：performance → powersave (REF:2026-08-25-coil-whine-cpu-governor)
-          CPU_SCALING_GOVERNOR_ON_AC = "powersave";
-          CPU_ENERGY_PERF_POLICY_ON_AC = "balance_performance";
-          # PL1/PL2 不在 TLP 设置：platform_profile=performance 时固件强制 PL1=130W
-        };
-      };
-      power-profiles-daemon.enable = false;
-    };
-
-    # zram：计算任务占满内存时防死机
-    zramSwap = {
+  assertions = [
+    {
+      assertion = config.networking.hostName == "omen";
+      message = "此功耗策略仅适用于已核验的 OMEN；请移除 hosts/omen/performance.nix 并配置目标机。";
+    }
+  ];
+  environment.systemPackages = [
+    config.boot.kernelPackages.cpupower
+    pkgs.tlp-pd
+  ];
+  services = {
+    system76-scheduler.enable = true;
+    scx = {
       enable = true;
-      memoryPercent = 50;
+      scheduler = "scx_lavd";
     };
-
-    # 进程资源：文件描述符上限（并行编译/大数据量计算需要大量 fd）
-    security.pam.loginLimits = [
-      {
-        domain = "*";
-        type = "soft";
-        item = "nofile";
-        value = "65536";
-      }
-    ];
+    irqbalance.enable = true;
+    tlp = {
+      enable = true;
+      settings = {
+        # 动态调频避免线圈啸叫（REF:2026-08-25-coil-whine-cpu-governor）。
+        CPU_SCALING_GOVERNOR_ON_AC = "powersave";
+        CPU_ENERGY_PERF_POLICY_ON_AC = "balance_performance";
+      };
+    };
+    power-profiles-daemon.enable = false;
   };
+  zramSwap = {
+    enable = true;
+    memoryPercent = 50;
+  };
+  security.pam.loginLimits = [
+    {
+      domain = "*";
+      type = "soft";
+      item = "nofile";
+      value = "65536";
+    }
+  ];
 }

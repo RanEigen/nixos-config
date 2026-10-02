@@ -1,20 +1,16 @@
-# ============================================================
-# virtualisation.nix —— 容器与虚拟化
-# 职责：podman（distrobox 后端）、AppImage 支持、FUSE
-# 修改：容器配置 → 改这里
-# 关联：packages.nix（podman/distrobox 二进制）、users.nix（podman 组）
-# ============================================================
-_:
+# 容器与 AppImage；包由官方模块安装。
+{ pkgs, ... }:
 
 {
-  # ============ AppImage 支持 ============
+  environment.systemPackages = [ pkgs.fuse-overlayfs ];
+  # AppImage
   programs.appimage = {
     enable = true;
     binfmt = true; # 允许直接执行
   };
   programs.fuse.userAllowOther = true; # AppImage/容器用户态挂载需要
 
-  # ============ podman（distrobox 后端：shell-utils.nix distrobox / users.nix podman 组）============
+  # Podman 为 distrobox 提供 rootless 容器。
   # 不开 dockerSocket：rootful 兼容 socket（/run/podman/podman.sock）≈ root；distrobox 用 rootless 即可
   virtualisation.podman.enable = true;
 

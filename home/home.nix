@@ -1,13 +1,6 @@
-# home.nix —— home-manager 主入口（NixOS 用户配置）
-# ============================================================
-{ ... }:
-
 {
   imports = [
-    ./modules/core.nix
-    ./modules/theme
-    ./modules/env.nix
-    ./modules/desktop
-    ./modules/tools
+    ./modules/core.nix # 用户版本与 Nix 客户端
+    ./modules/tools # 通用 shell 与终端工具
   ];
 }

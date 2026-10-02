@@ -1,6 +1,4 @@
-# fcitx5.nix —— 输入法用户级配置（fcitx5 + rime 雾凇）
-# 系统层（modules/locale.nix）已负责 i18n.inputMethod + QT/XMODIFIERS 等 IM 环境变量
-# 本模块只写用户级配置（~/.config/fcitx5、~/.local/share/fcitx5/rime）
+# Fcitx5 / Rime 用户配置；系统接线见 modules/input-method.nix。
 { my, ... }:
 
 {
@@ -14,13 +12,8 @@
         Backend=Baidu
       '';
 
-      # 2. 外观：字体 + 横排候选框 + 主题名
-      #（候选框是 UI 组件，用系统默认中文字体；Maple Mono 仅终端使用）
-      # 🔴 fcitx5 readAsIni 只读首个命中文件（~/.config 优先于 /etc/xdg），
-      #    系统层 catppuccin.fcitx5 写进 /etc/xdg 的主题名会被本文件整体遮蔽，
-      #    故主题名须在用户配置显式给出（addon 仍由系统层 catppuccin.fcitx5 安装）；
-      #    主题名与 my.catppuccin 单一来源同步。
-      # force=true：防止 fcitx5 运行时重写 classicui.conf
+      # 用户配置优先于 /etc/xdg，必须显式引用同一主题名。
+      # force 接管现有文件；主题插件仍由系统模块安装。
       "fcitx5/conf/classicui.conf" = {
         force = true;
         text = ''

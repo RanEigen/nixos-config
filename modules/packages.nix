@@ -1,69 +1,61 @@
-# ============================================================
-# packages.nix —— 系统级全局二进制 + 系统字体
-# 职责：需要 root / tty 兜底 / 常驻服务 / 全局 PATH 的二进制（按用途分节）+ fonts.packages
-# 原则（STANDARDS §3.1）：仅用户会话使用的 GUI/CLI 一律 home-manager；
-#   新增前先问「root 或系统服务需要它在 /run/current-system/sw/bin 吗？」
-# ============================================================
-{ config, pkgs, ... }:
-
+# root / TTY 排障工具；会话与字体依赖由 desktop profile 选择。
+{ pkgs, ... }:
 {
-  environment.systemPackages = with pkgs; [
-    # ---- X11/Wayland 兼容层 ----
-    xwayland-satellite # niri 26.04 经 xwayland-satellite 提供 X11 应用支持
-    xhost # niri spawn-at-startup 调用（允许 root 经用户 xwayland 开窗）
+  environment = {
+    systemPackages = with pkgs; [
+      wget
+      git # root 救援需要；用户 Git 配置由 HM 管理。
+      traceroute
+      vim
+      stress-ng
+      perf
+      numactl
+      fio
+      iotop
+      nmon
+      sysstat
+      iperf3
 
-    # ---- 会话/认证组件（greeter 与所有会话统一；先于用户 profile 可用）----
-    # 认证代理：Noctalia shell 内置 polkit agent（2026-09-26 DMS→Noctalia 迁移，polkit-gnome 移除）
-    sound-theme-freedesktop # 系统音效主题
+      # 获取源码、查看文件
 
-    # ---- 容器与虚拟化（podman 为系统服务；AppImage 走 binfmt）----
-    podman
-    fuse-overlayfs
-    appimage-run
+      curl
+      ripgrep
+      jq
 
-    # ---- 基线 CLI / 系统排障（root 与 tty 兜底；服务脚本按 /run/current-system/sw/bin 取）----
-    wget
-    git
-    curl
-    dnsutils
-    traceroute
-    openssh
+      # 解压源码和二进制安装包
+      gnutar
+      gzip
+      bzip2
+      xz
+      unzip
+      zip
+      p7zip
+      dpkg
+      rpm
+      cpio
 
-    # ---- 系统工具 ----
-    btrfs-progs
-    vim # EDITOR 兜底 + root 救援
-    cups-pk-helper
-    tlp
-    tlp-pd
+      # ELF 检查、修改和调试
+      file
+      binutils
+      patchelf
+      strace
+      gdb
 
-    # ---- 音频调试工具（系统层 pipewire 配套）----
-    pulseaudio # 提供 pactl 命令行工具
-    alsa-utils # 提供 alsamixer/amixer
+      # 常见构建工具，方便手动实验
+      gcc
+      gnumake
+      cmake
+      ninja
+      meson
+      pkg-config
+      autoconf
+      automake
+      libtool
 
-    # ---- 系统性能 / 压测 / 调优（多需 root：硬件计数器、调频、块设备 I/O）----
-    stress-ng # 全方位压力测试（CPU/内存/I/O/磁盘）
-    config.boot.kernelPackages.cpupower # CPU 调频/Governor；跟随 modules/boot.nix 的 kernelProfile 唯一来源
-    perf # 内核性能分析（硬件计数器/缓存未命中/分支预测）
-    numactl # NUMA 内存/CPU 节点绑定（numactl/numastat）
-    fio # 存储 I/O 压测（IOPS/吞吐/延迟）
-    iotop # 按进程实时 I/O（类 top）
-    nmon # 系统性能全景监控（CPU/内存/网络/磁盘一屏）
-    sysstat # iostat/sar/mpstat/pidstat
-    iperf3 # 网络吞吐/丢包测试
+      # 脚本与 Nix 编辑辅助
+      python3
+      shellcheck
 
-    # ---- 脚本运行时 ----
-    python3
-  ];
-
-  # 系统字体
-  fonts.packages = with pkgs; [
-    maple-mono.NF-CN # 终端 kitty 使用
-    nerd-fonts.jetbrains-mono # 浏览器/等宽代码块
-    lxgw-neoxihei # 中文 UI 字体（family: LXGW Neo XiHei；fontconfig 回退链首选，见 home/source/beautify/fontconfig/fonts.conf）
-    noto-fonts-cjk-sans # 中文回退（LXGW 缺字时兜底）
-    noto-fonts
-    noto-fonts-color-emoji # 彩色 emoji（缺失时通知/浏览器 emoji 呈 tofu；26.11 起由 noto-fonts-emoji 改名而来）
-    inter # Noctalia UI 字体
-    fira-code # 等宽字体
-  ];
+    ];
+  };
 }

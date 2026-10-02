@@ -1,8 +1,4 @@
-# ============================================================
-# nixvim.nix —— 编辑器（Nixvim，Home Manager 模块）
-# 职责：Neovim 声明式配置（选项/插件/LSP/键位/fcitx5 状态联动）
-# 引入：flake.nix 的 home-manager.users.<user>.imports 引入 inputs.nixvim.homeModules.nixvim
-# ============================================================
+# Neovim 插件、LSP 与键位；接口由 development profile 引入。
 { my, ... }:
 
 {
@@ -171,14 +167,6 @@
           # Nix 语言支持（已自动替你处理 nil 服务）
           nil_ls.enable = true;
 
-          # 如有其他语言需求，直接开启对应选项（Nix 会自动安装对应 server 二进制）：
-          # lua_ls.enable = true;
-          # pyright.enable = true;
-          # rust_analyzer = {
-          #   enable = true;
-          #   installCargo = false;
-          #   installRustc = false;
-          # };
         };
         keymaps.lspBuf = {
           "gd" = {

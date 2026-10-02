@@ -26,6 +26,7 @@
 | 2026-09-05 | 多主机可移植重构 + 代理模型定型（会话归档） | 透明代理 dae 依赖本机 fcclient 后端；会话/网络环境变化时链路失效 → 归档结论与可移植约定 | ✅ 已归档 | [2026-09-05-portability-proxy-session.md](./2026-09-05-portability-proxy-session.md) |
 | 2026-09-09 | fish 缩写删除后仍生效（通用变量残留） | 声明式删除 abbr ≠ 清掉 fish universal variable；需 `abbr --erase`/清 `fish_variables` | ✅ 已解决 | [2026-09-09-fish-abbr-universal-residue.md](./2026-09-09-fish-abbr-universal-residue.md) |
 | 2026-09-12 | VSCode 装不了扩展 + HM 激活失败（extensions 目录布局切换） | `~/.vscode/extensions` 停留在旧代际只读软链；`mutableExtensionsDir=false` 后需迁移 | ✅ 已解决 | [2026-09-12-vscode-extensions-layout-transition.md](./2026-09-12-vscode-extensions-layout-transition.md) |
+| 2026-09-28 | Zed / VSCode 无法补全 options 与 nixpkgs | nixd ≥2.9 只认 `workspace/configuration`（Zed 误写 `initialization_options`）+ expr 用 `./.` 按进程 cwd 解析（编辑器不设工作区 cwd）→ 静默回退默认 | ✅ 已解决 | [2026-09-28-nixd-editor-completion.md](./2026-09-28-nixd-editor-completion.md) |
 
 ## 模板（新增记录时复制）
 

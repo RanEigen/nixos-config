@@ -1,40 +1,21 @@
-# ============================================================
-# core.nix —— 基础层
-# 职责：用户身份、nix 客户端配置
-# ============================================================
+# 用户历史版本与 Nix 客户端策略。
 {
   pkgs,
   lib,
   my,
   ...
 }:
-
 {
-  # 身份（username/homeDirectory）由系统层 users.users 自动派生
-  # （HM 作为 NixOS 模块时 nixos/common.nix 会按 users.users.<name> 设置）；
-  # 此处只保留 HM 自己的 stateVersion（首次使用值，勿随版本升，STANDARDS §3）
-  home.stateVersion = my.stateVersion;
-
+  home.stateVersion = my.homeStateVersion;
   programs.home-manager.enable = true;
-
-  # nix 客户端配置
   nix = {
     package = lib.mkDefault pkgs.nix;
-    settings = {
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-      # substituters 单一来源是系统层 modules/nix.nix（daemon 管理）
-      # 与系统层 connect-timeout 保持一致
-      connect-timeout = 5;
-    };
+    settings.experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
   };
-
-  # 客户端级 unfree 允许（nix profile add / nix-env 走 ~/.config/nixpkgs/config.nix）
-  xdg.configFile."nixpkgs/config.nix".text = ''
-    { allowUnfree = true; }
-  '';
-
+  # 系统 nix.conf 提供缓存、超时与秘密 include；此处仅输出用户包策略。
+  xdg.configFile."nixpkgs/config.nix".text = lib.generators.toPretty { } my.nixpkgsConfig;
   xdg.configFile."nix/nix.conf".force = true;
 }

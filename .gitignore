@@ -16,5 +16,5 @@ result
 # 虚拟机磁盘镜像（勿提交）
 *.qcow2
 
-# 系统级壁纸（2026-09 起改用 catppuccin.limine，壁纸不入库）
-/assets/wallpaper/
+# 本地媒体保留在原位置，不进入 flake 源
+/assets/nixos-wallpaper/

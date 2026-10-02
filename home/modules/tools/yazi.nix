@@ -1,16 +1,14 @@
 { pkgs, ... }:
 
 {
-  # yazi：终端文件管理器（配色由 catppuccin.yazi 自动提供，见 home/modules/theme/）
-  # 不启用 enableFishIntegration —— 其会生成 fish/functions/y.fish，
-  # 与 fish.nix 中手写的 y.fish 冲突（同一目标文件）
+  # HM 提供 y 包装函数，避免手写同名 fish 函数。
   programs.yazi = {
     enable = true;
     # 显式采用新默认 "y"（stateVersion < 26.05 时 HM 默认是 legacy "yy"，会产生弃用警告）
     shellWrapperName = "y";
 
     # 主配置：显示隐藏文件、自然排序、目录置顶
-    # 🔴 必须有非空 settings 才会生成 yazi.toml
+    # 非空 settings 才会生成 yazi.toml。
     settings = {
       manager = {
         show_hidden = true;

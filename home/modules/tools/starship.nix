@@ -65,8 +65,6 @@
         truncation_symbol = "…/";
         # 🔒 目录只读时显示锁图标
         read_only = "🔒 ";
-        # ⚠️ 2026-08-17：scan_for_workdir_files / scan_timeout 已在 starship 1.26 移除
-        #   （schema 无此键，配置会触发 "Unknown key" 警告）→ 已删除，性能由 command_timeout 兜底
         substitutions = {
           "Documents" = "󰈙 ";
           "Downloads" = " ";
@@ -137,8 +135,7 @@
         format = "[$symbol$version]($style) ";
       };
 
-      # 以下模块用 detect_files / detect_extensions 指定触发文件（性能优化）
-      # starship 1.26 起模块名 `go` 改名为 `golang`
+      # 按项目文件识别语言环境。
       golang = {
         symbol = " ";
         style = "fg:sky";

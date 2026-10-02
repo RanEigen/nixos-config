@@ -1,12 +1,16 @@
-# hardware.nix —— 硬件（NVIDIA 混合显卡/蓝牙/VA-API）
-# ============================================================
+# 本机 NVIDIA 混合显卡、蓝牙与视频加速。
 { pkgs, config, ... }:
 
 {
+  assertions = [
+    {
+      assertion = config.networking.hostName == "omen";
+      message = "此模块包含 OMEN 固定 PCI 地址；请移除 hosts/omen/hardware.nix 并使用目标机硬件配置。";
+    }
+  ];
   hardware = {
     # NVIDIA RTX 4060
     nvidia = {
-      # hardware.nvidia.enabled 是只读选项，由 videoDrivers 含 "nvidia" 自动推导
       open = false;
       modesetting.enable = true;
       nvidiaPersistenced = true;
@@ -14,8 +18,7 @@
       powerManagement.enable = true;
       # 40 系移动端显存精细电源管理
       powerManagement.finegrained = true;
-      # nixpkgs 官方 New Feature 分支（与 nvidia_cachyos 同为 610.57.04，不降级）；
-      # 跟随当前 boot.kernelPackages，多内核切换时自动配套（见 multikernel.nix）
+      # 驱动随所选内核配套，覆盖备用内核场景。
       package = config.boot.kernelPackages.nvidiaPackages.latest;
       prime = {
         offload.enable = true;
