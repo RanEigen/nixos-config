@@ -11,6 +11,7 @@ in
 {
   imports = [ inputs.nix-index-database.nixosModules.nix-index ];
   nixpkgs.overlays = [ inputs.self.overlays.default ];
+  # Nix 管理与排障 CLI；用户级工具仍由 Home Manager 或 devShell 管理。
   environment.systemPackages = with pkgs; [
     nix-update
     nix-du
