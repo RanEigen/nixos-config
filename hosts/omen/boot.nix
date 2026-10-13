@@ -33,6 +33,9 @@
         efiInstallAsRemovable = true;
         maxGenerations = 3; # ESP 容量限制；保留回滚入口。
         enableEditor = true;
+        extraConfig = ''
+          mouse: yes
+        '';
         resolution = "1920x1200x32";
         # 颜色由 catppuccin.limine 提供，避免覆盖其主题。
         style = {

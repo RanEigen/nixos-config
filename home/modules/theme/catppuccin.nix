@@ -6,7 +6,7 @@
     autoEnable = true;
     inherit (my.catppuccin) flavor accent;
     cursors.enable = true; # 光标端口不随 autoEnable。
-    gtk.icon.enable = false; # 使用 Papirus / Tela 回退链。
+    gtk.icon.enable = false; # 使用原版 Papirus-Dark。
     nvim.enable = false; # 由 Nixvim 配色模块管理。
     firefox.enable = false; # 浏览器仅包安装，没有 HM profile。
     kvantum.enable = false; # Qt 使用 GTK 平台主题。

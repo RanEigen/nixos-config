@@ -1,0 +1,60 @@
+2801.174903 target=1-1 VID:PID=0c45:880c bcdDevice=0140 bus=1 address=2 interface=0 endpoint=0x81 maxpacket=8
+2801.174984 initial driver=/sys/bus/usb/drivers/usbhid
+2801.231509 Temporarily releasing only the selected external NUT75 interface
+2801.287322 CONTROL bmRequestType=0xa1 bRequest=0x03 wValue=0x0000 wIndex=0x0000 wLength=1 OUT=-
+2801.287541 RESPONSE length=1 IN=00
+2801.287557 GET_PROTOCOL=0 (BOOT)
+2801.287561 Initial protocol (after Linux init, NOT power-on default): b'\x00'
+2801.287574 CONTROL bmRequestType=0xa1 bRequest=0x02 wValue=0x0000 wIndex=0x0000 wLength=1 OUT=-
+2801.287696 RESPONSE length=1 IN=00
+2801.287704 CONTROL bmRequestType=0x21 bRequest=0x0b wValue=0x0001 wIndex=0x0000 wLength=0 OUT=-
+2801.287815 RESPONSE length=0 IN=-
+2801.287820 CONTROL bmRequestType=0xa1 bRequest=0x03 wValue=0x0000 wIndex=0x0000 wLength=1 OUT=-
+2801.287935 RESPONSE length=1 IN=01
+2801.287940 GET_PROTOCOL=1 (REPORT)
+2801.287974 CONTROL bmRequestType=0xa1 bRequest=0x01 wValue=0x0100 wIndex=0x0000 wLength=8 OUT=-
+2801.288152 ERROR -9 LIBUSB_ERROR_PIPE
+2801.288160 CAPTURE REPORT baseline: for 8.0s tap/release A, Up, Enter, then Shift+A; Interface 0 capture may duplicate ordinary input via Interface 1. Do not type secrets.
+2809.298175 CAPTURE DONE packets=0 timeouts=40; zero packets without a confirmed keypress is inconclusive
+2809.298242 CONTROL bmRequestType=0x21 bRequest=0x0b wValue=0x0000 wIndex=0x0000 wLength=0 OUT=-
+2809.298372 RESPONSE length=0 IN=-
+2809.298380 CONTROL bmRequestType=0xa1 bRequest=0x03 wValue=0x0000 wIndex=0x0000 wLength=1 OUT=-
+2809.298491 RESPONSE length=1 IN=00
+2809.298497 GET_PROTOCOL=0 (BOOT)
+2809.298555 CONTROL bmRequestType=0xa1 bRequest=0x01 wValue=0x0100 wIndex=0x0000 wLength=3 OUT=-
+2809.298698 ERROR -9 LIBUSB_ERROR_PIPE
+2809.298704 CAPTURE BOOT without changing idle: for 8.0s tap/release A, Up, Enter, then Shift+A; Interface 0 capture may duplicate ordinary input via Interface 1. Do not type secrets.
+2817.307943 CAPTURE DONE packets=0 timeouts=40; zero packets without a confirmed keypress is inconclusive
+2817.307984 CONTROL bmRequestType=0x21 bRequest=0x0a wValue=0x0000 wIndex=0x0000 wLength=0 OUT=-
+2817.308163 RESPONSE length=0 IN=-
+2817.308187 CONTROL bmRequestType=0xa1 bRequest=0x02 wValue=0x0000 wIndex=0x0000 wLength=1 OUT=-
+2817.308390 RESPONSE length=1 IN=00
+2817.308408 CAPTURE BOOT idle=0 (0ms; zero=change only): for 8.0s tap/release A, Up, Enter, then Shift+A; Interface 0 capture may duplicate ordinary input via Interface 1. Do not type secrets.
+2825.319799 CAPTURE DONE packets=0 timeouts=40; zero packets without a confirmed keypress is inconclusive
+2825.319843 CONTROL bmRequestType=0x21 bRequest=0x0a wValue=0x7d00 wIndex=0x0000 wLength=0 OUT=-
+2825.319905 RESPONSE length=0 IN=-
+2825.319912 CONTROL bmRequestType=0xa1 bRequest=0x02 wValue=0x0000 wIndex=0x0000 wLength=1 OUT=-
+2825.320090 RESPONSE length=1 IN=7d
+2825.320110 CAPTURE BOOT idle=125 (500ms; zero=change only): for 8.0s tap/release A, Up, Enter, then Shift+A; Interface 0 capture may duplicate ordinary input via Interface 1. Do not type secrets.
+2833.328790 CAPTURE DONE packets=0 timeouts=40; zero packets without a confirmed keypress is inconclusive
+2833.328842 CONTROL bmRequestType=0x21 bRequest=0x0b wValue=0x0001 wIndex=0x0000 wLength=0 OUT=-
+2833.328906 RESPONSE length=0 IN=-
+2833.328912 CONTROL bmRequestType=0xa1 bRequest=0x03 wValue=0x0000 wIndex=0x0000 wLength=1 OUT=-
+2833.328972 RESPONSE length=1 IN=01
+2833.328977 GET_PROTOCOL=1 (REPORT)
+2833.328985 CONTROL bmRequestType=0xa1 bRequest=0x01 wValue=0x0100 wIndex=0x0000 wLength=8 OUT=-
+2833.329225 ERROR -9 LIBUSB_ERROR_PIPE
+2833.329231 CAPTURE REPORT after BOOT (recovery): for 8.0s tap/release A, Up, Enter, then Shift+A; Interface 0 capture may duplicate ordinary input via Interface 1. Do not type secrets.
+2841.338946 CAPTURE DONE packets=0 timeouts=40; zero packets without a confirmed keypress is inconclusive
+2841.338987 RESTORE Report Protocol before usbhid reattach (Linux expects report format)
+2841.339018 CONTROL bmRequestType=0x21 bRequest=0x0b wValue=0x0001 wIndex=0x0000 wLength=0 OUT=-
+2841.339223 RESPONSE length=0 IN=-
+2841.339254 CONTROL bmRequestType=0x21 bRequest=0x0a wValue=0x0000 wIndex=0x0000 wLength=0 OUT=-
+2841.339422 RESPONSE length=0 IN=-
+2841.339449 CONTROL bmRequestType=0xa1 bRequest=0x03 wValue=0x0000 wIndex=0x0000 wLength=1 OUT=-
+2841.339632 RESPONSE length=1 IN=01
+2841.339652 GET_PROTOCOL=1 (REPORT)
+2841.339682 release_interface: 0 OK
+2841.403318 reattach_kernel_driver: 0 OK
+2841.403479 Completed. No automatic conformance verdict: inspect keypress captures and control errors.
+USBMON target-only capture: /tmp/nut75-investigation/usbmon-interface0.log

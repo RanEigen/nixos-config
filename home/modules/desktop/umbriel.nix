@@ -16,12 +16,8 @@ let
 
     general = {
       # environment 由合成器同步至 systemd user manager。
-      autostart = [
-        "noctalia" # 桌面壳（bar/启动器/壁纸/锁屏/通知/窗口切换器）
-        "fcitx5" # 输入法
-        "xhost +si:localuser:root" # 允许 root 经用户 xwayland-satellite 开窗
-        "${config.home.homeDirectory}/.config/umbriel/scripts/toggle-wlsunset" # 护眼
-      ];
+      # Noctalia 和 wlsunset 由 graphical-session.target 启动，不重复 autostart。
+      autostart = [ "fcitx5" ]; # 输入法
       show_cheatsheet = true;
     };
 
@@ -36,7 +32,7 @@ let
       QT_IM_MODULE = "fcitx";
       QT_QPA_PLATFORMTHEME = "gtk3";
       QT_QPA_PLATFORMTHEME_QT6 = "gtk3";
-      QS_ICON_THEME = "Papirus-Dark"; # Noctalia 外壳图标主题
+      QS_ICON_THEME = config.gtk.iconTheme.name; # 与 GTK 图标同源
       EDITOR = "vim";
     };
 
@@ -130,12 +126,5 @@ in
     # NixOS 模块安装会话包，HM 只生成配置。
     package = null;
     settings = core // binds // rules;
-  };
-
-  # 启动脚本目录（护眼 toggle-wlsunset；与合成器无关）
-  xdg.configFile."umbriel/scripts" = {
-    source = ../../../assets/scripts;
-    recursive = true;
-    force = true;
   };
 }

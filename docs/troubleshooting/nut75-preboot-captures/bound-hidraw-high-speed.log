@@ -1,0 +1,10 @@
+419.597142 opened read-only hidraw0: /sys/devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.0/0003:0C45:880C.0001
+419.597484 opened read-only hidraw1: /sys/devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.1/0003:0C45:880C.0002
+419.598553 opened read-only event3
+419.598648 opened read-only event1
+419.599515 opened read-only event2
+419.599918 Standard GET_DESCRIPTOR(Device) bmRequestType=80 bRequest=06 wValue=0100 wIndex=0000 wLength=18: rc=18 data=12 01 00 02 00 00 00 40 45 0c 0c 88 40 01 01 02 03 01
+419.599926 BOUND READ START; no detach, no class requests, no protocol changes. Tap A/Up/Enter/Shift+A on NUT75.
+419.599976 USBMON urb0001 419599757 S Ci:1:002:0 s 80 06 0100 0000 0012 18 <
+419.600018 USBMON urb0001 419599872 C Ci:1:002:0 0 18 = 12010002 00000040 450c0c88 40010102 0301
+449.599944 BOUND READ END counts={}

@@ -1,0 +1,3 @@
+PASSIVE START 2026-10-08T18:34:05+0800 target 1-1 speed 480
+No detach, no claim, no device control requests; only target USB completions.
+PASSIVE END 2026-10-08T18:35:05+0800 successful_interrupt_packets {}

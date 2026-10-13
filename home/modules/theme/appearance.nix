@@ -1,26 +1,6 @@
 # 字体渲染、GTK / Qt、图标与光标。
 { pkgs, my, ... }:
 let
-  # 保留 Papirus 图标，按主题继承链回退到 Tela。
-  papirusWithTelaFallback = pkgs.runCommand "papirus-icon-theme-with-tela-fallback" { } ''
-    mkdir -p $out/share/icons
-    for t in Papirus Papirus-Dark Papirus-Light; do
-      case $t in
-        Papirus) fb=Tela-circle ;;
-        Papirus-Dark) fb=Tela-circle-dark ;;
-        Papirus-Light) fb=Tela-circle-light ;;
-      esac
-      mkdir -p $out/share/icons/$t
-      ln -s ${pkgs.papirus-icon-theme}/share/icons/$t/* $out/share/icons/$t/
-      rm $out/share/icons/$t/index.theme
-      cp ${pkgs.papirus-icon-theme}/share/icons/$t/index.theme $out/share/icons/$t/index.theme
-      sed -i "s|^Inherits=.*|Inherits=$fb,hicolor|" $out/share/icons/$t/index.theme
-    done
-    for t in Tela-circle Tela-circle-dark Tela-circle-light; do
-      ln -s ${pkgs.tela-circle-icon-theme}/share/icons/$t $out/share/icons/$t
-    done
-    ln -s ${pkgs.papirus-icon-theme}/share/icons/hicolor $out/share/icons/hicolor
-  '';
   catppuccinGtk = pkgs.catppuccin-gtk.override {
     accents = [ my.catppuccin.accent ];
     variant = my.catppuccin.flavor;
@@ -51,7 +31,7 @@ in
     };
     iconTheme = {
       name = "Papirus-Dark";
-      package = papirusWithTelaFallback;
+      package = pkgs.papirus-icon-theme;
     };
     # GTK3/4 不写 im-module；GTK2 仅用于 X11（REF:2026-08-21-fcitx5-gtk）。
     gtk2.extraConfig = "gtk-im-module=\"fcitx\"";

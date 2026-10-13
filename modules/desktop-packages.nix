@@ -3,7 +3,6 @@
 {
   environment.systemPackages = with pkgs; [
     xwayland-satellite
-    xhost
     cups-pk-helper
     pulseaudio # pactl，用于 PipeWire 排障。
     alsa-utils

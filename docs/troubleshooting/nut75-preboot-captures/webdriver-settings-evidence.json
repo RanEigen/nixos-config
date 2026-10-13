@@ -1,0 +1,51 @@
+{
+  "collected": "2026-10-08",
+  "scope": "Read-only official web-driver JavaScript and a whitelisted summary of the local vendor-origin device-settings cache. No browser account records, macros, passwords, or vendor USB requests are included.",
+  "official_driver_url": "https://weikav.driveall.cn/",
+  "model_source_url": "https://weikav.driveall.cn/assets/layout-classic-gajQAda5.js",
+  "settings_source_url": "https://weikav.driveall.cn/assets/settings-B8lyvdw9.js",
+  "downloaded_source_sha256": {
+    "layout-classic-gajQAda5.js": "d69157298497acda07d9a2b1385a0e880b876682e8c512fae53da2fdab9ddfa5",
+    "settings-B8lyvdw9.js": "08740ff298afb395a8083017583e82b45fd92983f23a1ea5b7a82617eacb881d"
+  },
+  "nut75_model_config": {
+    "vendorId": 3141,
+    "productId": 34828,
+    "name": "NUT75",
+    "connectType": "USB",
+    "settingsConfig": {
+      "isShowReportRate": true,
+      "reportRateList": [1000, 4000, 8000]
+    },
+    "customKeysConfig": {
+      "fnFuncIds": []
+    }
+  },
+  "report_rate_encoding_in_official_ui": {
+    "3": 1000,
+    "4": 2000,
+    "5": 4000,
+    "6": 8000
+  },
+  "generic_shared_protocol_features": {
+    "nkroSwitch": "Read/written as byte 17 of generic game-mode data; supported values and meaning on this NUT75 are NOT established.",
+    "function_187": "6-key / N-key rollover toggle",
+    "function_255": "6-key rollover",
+    "function_256": "N-key rollover",
+    "visibility_filter": "Functions are filtered by model fnFuncIds union device-derived defaultFnFuncIds. Shared strings are NOT proof of NUT75 support."
+  },
+  "cached_settings_NOT_live_hardware_state": {
+    "identity": {"vid": 3141, "pid": 34828, "version": "1.40", "frameVersion": 0},
+    "reportRate_sequential_distinct_values": [6, 3, 6, 3],
+    "last_reportRate": 3,
+    "last_reportRate_decoded_Hz": 1000,
+    "last_nkroSwitch": 0,
+    "nkroSwitch_0_semantics": "Unknown; do not assume this means a working BIOS/6KRO mode.",
+    "method": "Whitelist-only fields from vendor-origin IndexedDB WAL. V8 signed-varint values independently decoded. A private clone was additionally decoded with local serialization-header adaptation; no complete settings/profile record retained here."
+  },
+  "unauthenticated_firmware_metadata_query": {
+    "url": "https://cp.driveall.cn/api/device/firmware/index?supplier_name=weikav&connect_type=USB&vid=3141&pid=34828&product_name=NUT75",
+    "response": {"code": 0, "msg": "数据为空", "data": null},
+    "interpretation": "No matching metadata returned to this unauthenticated request; not proof that revision 1.40 is current or no update exists. No firmware was downloaded or flashed."
+  }
+}

@@ -17,7 +17,7 @@ _:
 
   window_rule = [
     # ---- 全局毛玻璃：所有窗口半透明 + 圆角 + 背景模糊 ----
-    # blur_optimized 不写 = 默认 true：仅模糊一次壁纸背景供所有窗口复用，零额外消耗
+    # blur_optimized 不写 = 默认 true：复用壁纸模糊结果，减少重复模糊开销。
     {
       opacity = 0.94;
       corner_radius = 12;

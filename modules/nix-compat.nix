@@ -5,6 +5,10 @@
     enable = true;
     libraries = with pkgs; [
       # 基础库
+      libcap
+      libxcrypt-legacy
+      libtirpc
+      ncurses
       stdenv.cc.cc
       openssl
       zlib
@@ -15,6 +19,7 @@
       gettext
       libxml2
       # GTK / Electron
+      cups
       glib
       nss
       nspr
@@ -51,6 +56,8 @@
       wayland
       libxkbcommon
       # 音视频
+      gst_all_1.gstreamer
+      gst_all_1.gst-plugins-base
       alsa-lib
       libpulseaudio
       libvorbis
@@ -59,6 +66,10 @@
       libvpx
       ffmpeg
       # 网络与运行时
+      rdma-core
+      ucx
+      numactl
+      libpsm2
       curl
       libidn2
       libssh2

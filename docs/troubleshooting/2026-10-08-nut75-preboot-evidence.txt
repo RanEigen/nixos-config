@@ -1,0 +1,233 @@
+NUT75 preboot investigation — local observations, 2026-10-08
+Serial numbers intentionally omitted. Initial collection was read-only; subsequent user-authorized protocol tests are appended below. No firmware or vendor commands.
+
+DMI
+sys_vendor: HP
+product_name: OMEN by HP Gaming Laptop 16-wf0xxx
+product_sku: 81L09PA#AB2
+board_name: 8BAB
+bios_vendor: Insyde
+bios_version: F.28
+bios_date: 07/16/2025
+
+Installed /boot/EFI/BOOT/BOOTX64.EFI strings:
+Limine 12.9.1
+Limine 12.9.1 (x86-64, UEFI)
+/boot/limine/limine.conf line 10: mouse: no
+
+USB device sysfs path:
+/sys/devices/pci0000:00/0000:00:14.0/usb1/1-1
+idVendor=0c45 idProduct=880c bcdDevice=0140
+manufacturer=hfdic product=NUT75
+busnum=1 devnum=2 speed=12 version=2.00
+bDeviceClass=00 bNumConfigurations=1 bConfigurationValue=1
+bmAttributes=a0 bMaxPower=100mA authorized=1
+
+Raw device + configuration descriptors from sysfs:
+12 01 00 02 00 00 00 40 45 0c 0c 88 40 01 01 02 03 01
+09 02 94 00 05 01 00 a0 32
+09 04 00 00 01 03 01 02 00
+09 21 10 01 00 01 22 3e 00
+07 05 81 03 08 00 01
+09 04 01 00 01 03 01 01 00
+09 21 00 01 00 01 22 87 00
+07 05 82 03 10 00 01
+09 04 02 00 01 03 00 00 00
+09 21 00 01 00 01 22 22 00
+07 05 05 03 08 00 08
+09 04 03 00 02 03 00 00 00
+09 21 11 01 00 01 22 2c 00
+07 05 83 03 40 00 01
+07 05 03 03 40 00 01
+09 04 04 00 02 03 00 00 00
+09 21 11 01 00 01 22 22 00
+07 05 84 03 40 00 08
+07 05 04 03 40 00 08
+
+hidraw0 -> 1-1:1.0, hid-generic, report descriptor (62 bytes):
+05 01 09 06 a1 01 05 07 19 e0 29 e7 15 00 25 01 75 01
+95 08 81 02 95 01 75 08 81 01 95 03 75 01 05 08 19 01
+29 03 91 02 95 05 75 01 91 01 95 06 75 08 26 ff 00 05
+07 19 00 29 ff 81 00 c0
+
+hidraw1 -> 1-1:1.1, hid-generic, report descriptor (135 bytes):
+05 01 09 02 a1 01 85 01 09 01 a1 00 05 09 19 01 29 05
+15 00 25 01 75 01 95 05 81 02 75 03 95 01 81 01 05 01
+09 30 09 31 09 38 15 81 25 7f 75 08 95 03 81 06 c0 c0
+05 01 09 06 a1 01 85 02 05 07 19 00 29 77 15 00 25 01
+75 01 95 78 81 02 c0 05 0c 09 01 a1 01 85 03 15 00 26
+ff 1f 19 00 2a ff 1f 75 10 95 01 81 00 c0 05 01 09 80
+a1 01 85 04 05 01 19 81 29 83 15 00 25 01 95 03 75 01
+81 02 95 01 75 05 81 01 c0
+
+hidraw2 -> 1-1:1.3, hid-generic, report descriptor (44 bytes):
+06 68 ff 09 61 a1 01 06 ff ff 19 00 29 7f 15 00 26 ff
+00 75 08 95 40 81 02 06 ff ff 19 00 29 7f 15 00 26 ff
+00 75 08 95 40 91 02 c0
+
+hidraw3 -> 1-1:1.4, hid-generic, report descriptor (34 bytes):
+06 70 ff 09 71 a1 01 09 62 15 00 26 ff 00 95 40 75 08
+81 02 09 63 15 00 26 ff 00 95 40 75 08 91 02 c0
+
+lsusb -t (available usbutils-019 from /nix/store; not initially in PATH):
+/: Bus 001 root_hub xhci_hcd/16p, 480M
+    Port 001 Dev 002 If 0,1,3,4: usbhid, 12M
+    Port 001 Dev 002 If 2: no driver, 12M
+    Port 002 Dev 003 If 0,1,2: Compx mouse dongle, usbhid, 480M
+    Port 006 Dev 004 If 0,1: camera, uvcvideo, 480M; If 2 no driver
+    Port 014 Dev 005 If 0,1: Bluetooth, btusb, 12M
+/: Bus 002 root_hub xhci_hcd/10p, 20000M/x2
+/: Bus 003 root_hub xhci_hcd/2p, 480M, no attached device
+/: Bus 004 root_hub xhci_hcd/2p, 10000M, no attached device
+
+lspci -nnk (pciutils-3.15.0 from /nix/store):
+00:14.0 Intel 700 Series Chipset xHCI [8086:7a60], xhci_hcd
+23:00.0 Intel Thunderbolt 4 USB Controller [8086:1138], xhci_hcd
+04:00.0 Intel Thunderbolt 4 NHI [8086:1137], thunderbolt
+Bus 1/2 are on 00:14.0; bus 3/4 are on 23:00.0.
+Physical USB connector-to-controller mapping NOT measured.
+
+Relevant journalctl -k -b lines:
+usb 1-1: new full-speed USB device number 2 using xhci_hcd
+usb 1-1: not running at top speed; connect to a high speed hub
+usb 1-1: New USB device found, idVendor=0c45, idProduct=880c, bcdDevice=1.40
+usb 1-1: Product: NUT75
+usb 1-1: Manufacturer: hfdic
+usbhid 1-1:1.2: couldn't find an input interrupt endpoint
+hid-generic 0003:0C45:880C.0001: input,hidraw0: USB HID v1.10 Keyboard [hfdic NUT75] ... input0
+input: hfdic NUT75 Mouse ... 1-1:1.1/.../input/input2
+input: hfdic NUT75 Keyboard ... 1-1:1.1/.../input/input3
+hid-generic 0003:0C45:880C.0002: input,hidraw1: USB HID v1.00 Mouse [hfdic NUT75] ... input1
+hid-generic 0003:0C45:880C.0003: hiddev96,hidraw2: USB HID v1.11 Device [hfdic NUT75] ... input3
+hid-generic 0003:0C45:880C.0004: hiddev97,hidraw3: USB HID v1.11 Device [hfdic NUT75] ... input4
+The top-speed message is not evidence of enumeration failure or a proven hub fix.
+
+Privilege boundary:
+id: uid=1000(ran), member of wheel/input, not root
+sudo -n true: password required
+/dev/bus/usb/001/002: root:root, crw-rw-r-- (not writable by ran)
+/dev/hidraw0 and hidraw1: root:root 0600
+hidraw2/3 have uaccess ACLs; that does not authorize EP0 operations on interfaces 0/1.
+dmesg: operation not permitted; journalctl -k was readable.
+usbmon/debugfs/tracing unavailable without privilege; no modprobe or USB detach executed.
+lsusb -v: Couldn't open device, some information will be missing.
+Configuration descriptor available via cached sysfs; active Report Descriptor requests unavailable.
+
+Actual probe invocation:
+python3 assets/scripts/nut75-hid-probe.py
+1787.323088 target=1-1 VID:PID=0c45:880c bcdDevice=0140 bus=1 address=2 interface=1 endpoint=0x82 maxpacket=16
+1787.323173 initial driver=/sys/bus/usb/drivers/usbhid
+1787.433090 FAILED: open NUT75: -3 LIBUSB_ERROR_ACCESS
+No GET_PROTOCOL / SET_PROTOCOL / SET_IDLE reached the device.
+Syntax compilation, mocked interrupt/cleanup, and mocked full report/boot/idle/LED/report tests passed; NOT hardware conformance tests.
+
+UEFI runtime variables (read-only from efivarfs):
+SecureBoot payload=00; SetupMode payload=00 (Secure Boot currently disabled).
+ConInDev attributes=0x00000006 (BS+RT, not NV), contains these device-path instances:
+1. PciRoot(0)/Pci(0x1f,0)/Acpi(PNP0303,0)
+2. PciRoot(0)/Pci(0x14,0)/USB(parent_port=0,interface=1)
+3. PciRoot(0)/Pci(0x14,0)/USB(parent_port=1,interface=2)
+The second path matches the current NUT75 controller/root port/interface 1.
+The third matches the current Compx mouse dongle keyboard interface.
+ConIn includes two PNP0303 instances plus:
+USBClass(VID=ffff,PID=ffff,class=ff,subclass=ff,protocol=ff)
+USBClass(VID=ffff,PID=ffff,class=e0,subclass=01,protocol=01)
+These are wildcard USB-class paths, not evidence of reading any key.
+EDK II GlobalVariable.h defines ConInDev as all possible console input devices.
+EDK II ConPlatform.c appends a device path to ConInDev after opening Simple Text Input.
+This is strong circumstantial evidence against an absolute 'HP only scans interface 0' theory,
+but HP Insyde implementation, actual ConsoleInHandle aggregation, and SET_PROTOCOL remain unverified.
+No EFI variable was changed.
+
+Downloaded authoritative/source material during investigation:
+USB HID 1.11: https://www.usb.org/sites/default/files/hid1_11.pdf
+HID Usage Tables 1.5: https://www.usb.org/sites/default/files/hut1_5.pdf
+USB 2.0 package: https://www.usb.org/sites/default/files/usb_20_20250603.zip
+Limine installed-version source: https://github.com/limine-bootloader/limine/tree/v12.9.1
+Limine trunk snapshot queried: 1dc2a9bd6bb297ec2e31f0441cb79ae3f2235508
+EDK II master commit queried: a2030896f55d159d1c8e6d84c7a6ffd12357c263
+Linux master commit queried: 0c2669a9f4a1d607e7591ae50ccf3c432a0aff08
+EDK II and Linux master files are reference implementations, not proof of HP closed-source behavior or exact local kernel behavior.
+HP support driver page: Access Denied; exact-model BIOS changelog NOT obtained.
+UEFI 2.10 HTML/PDF: anti-bot challenge; normative clauses NOT locally verified.
+Search engines: Google/DDG anti-bot challenge; Bing limited/unhelpful results.
+GitHub searches yielded no usable NUT75 / 0c45:880c preboot diagnosis.
+
+WEIKAV website:
+https://weikav.com/waikv-software/
+NUT75 Online Driver: https://weikav.driveall.cn/
+NUT75 official-linked manual:
+https://drive.google.com/file/d/12tl04Z6Ol5kfUWCdcbDVPiEMCkWKF_vb/view
+Manual downloaded read-only from Google Drive; two pages, English and Chinese.
+Documented: Fn+T wired mode; Fn+D hold 3s toggles ultra-low/normal latency;
+Fn+Right Shift low power mode; Fn+M hold 3s Windows/Mac; Fn+Esc hold 3s factory reset.
+No BIOS/6KRO mode listed. No documented link between Fn+D and Boot Protocol.
+Manual lists USB 5V battery charging current 500mA +/-10%, lithium-powered lighting current up to 180mA +/-10%.
+This does NOT measure actual USB bus draw or prove a power-budget violation.
+Support channel listed on website: support@weikav.com, https://weikav.com/contact/
+NUT75 firmware 1.40 latest status, hidden shortcut, MCU revision and matching updater NOT established.
+
+SUBSEQUENT USER-AUTHORIZED HARDWARE TEST, 2026-10-08 18:23–18:25 +08:00
+sudo authentication succeeded; password NOT persisted to files or captures.
+Loaded usbmon and captured only bus 1 / device 2 transactions during each probe.
+Files (relative to docs/troubleshooting):
+nut75-preboot-captures/interface1-hardware.log
+nut75-preboot-captures/usbmon-interface1.log (kernel URB IDs replaced with consistent labels)
+nut75-preboot-captures/interface0-hardware.log
+nut75-preboot-captures/usbmon-interface0.log (kernel URB IDs replaced with consistent labels)
+
+Interface 1:
+GET_PROTOCOL after claim: 01 Report.
+SET_PROTOCOL Report / Boot / Report accepted; GET_PROTOCOL readback 01 / 00 / 01.
+GET_IDLE IDs 1..4: 00.
+SET_IDLE 0000 and 7d00 accepted; GET_IDLE ID 0 returns 00 and 7d respectively.
+GET_REPORT Report input ID 2 / length 16: LIBUSB_ERROR_PIPE; usbmon completion -32.
+GET_REPORT Boot input ID 0 / length 8: LIBUSB_ERROR_PIPE; usbmon completion -32.
+GET_REPORT Boot output ID 0 / length 1: LIBUSB_ERROR_PIPE; LED write safely skipped.
+Five 8-second interrupt windows: zero packets, including Report baseline and recovery.
+Restored protocol Report, saved idle values; release=0; reattach=0.
+
+Interface 0:
+Initial GET_PROTOCOL after claim: 00 Boot (not proof of power-on default or prior UEFI request).
+SET_PROTOCOL Report / Boot / Report accepted; GET_PROTOCOL readback 01 / 00 / 01.
+SET_IDLE 0000 and 7d00 accepted; GET_IDLE returns 00 and 7d.
+GET_REPORT Report input ID 0 / length 8: STALL.
+GET_REPORT Boot mouse input ID 0 / length 3: STALL.
+Five 8-second interrupt windows: zero packets, including Report baseline and recovery.
+Restored Report Protocol for Linux and original idle=0; release=0; reattach=0.
+
+At the time of the first capture, physical participation was not yet confirmed. The user subsequently CONFIRMED pressing keys; do not attribute those empty windows to an established absence of keypresses.
+Zero packets in both protocols do not establish Boot report format, key routing or input recovery.
+SET_IDLE=125 did not produce periodic input within the 8-second window on either tested interface.
+Acknowledgement/readback alone does not establish actual idle behavior.
+HID 1.11 section 7.2 marks GET_REPORT mandatory; repeated Input GET_REPORT STALL is a concrete conformance concern, not by itself proof of the preboot failure's direct cause.
+Initial no-claim root GET_PROTOCOL returned IO; kernel recorded 'did not claim interface 1 before use'. GET_PROTOCOL succeeded immediately after detach/claim, so the initial IO is not proof of unsupported protocol requests.
+Final sysfs checks: interfaces 0,1,3,4 are bound to usbhid; interface 2 remains unbound as before.
+Kernel logs show successful recreation of Interface 1 Mouse/Keyboard and Interface 0 Keyboard input nodes.
+For the 18:23–18:25 tests only: no USB reset, SET_CONFIGURATION, device-wide unbind, vendor request, firmware flash or EFI variable write was performed.
+
+FOLLOW-UP AFTER USER CONFIRMED KEYPRESSES, 2026-10-08
+Machine boot time changed to approximately 18:30. Current NUT75 remains bus 1/address 2/path 1-1 but negotiates 480 Mbps High Speed. Configuration/report descriptors are unchanged from the prior 12 Mbps enumeration. Endpoint 81/82 bInterval=1 means 125 us at High Speed (sysfs confirms 125us), versus 1 ms at Full Speed; it does not prove actual 8 kHz report production.
+Drivers: interfaces 0,1,3,4 usbhid; 2 unbound. Power runtime_status=active, control=on, runtime_suspended_time=0. No browser process found.
+New ConInDev still contains the NUT75 Interface 1 USB path; prior Compx path is absent in this boot.
+
+passive-high-speed-bound.log: 60-second target-only usbmon, no driver detachment/class request/protocol change; no successful nonempty input completion.
+bound-hidraw-high-speed.log: 30-second read-only opens of standard interfaces' hidraw and input nodes; no input. Target standard GET_DESCRIPTOR(Device) completion=0, actual_length=18 confirms the capture target/path. No class requests or detach.
+paired-high-speed-no-get-report.log: concurrently read 81 and 82 in initial (protocol0,protocol1)=(0,1), both Report (1,1), Keyboard Boot (1,0), both Boot (0,0), Boot with idle125, and restored Report. ALL input windows precede GET_REPORT; all empty. Per-interface protocol changes/readbacks are independent. Standard Boot LED SET_REPORT(Output, ID0, length1, data00) on Interface1 completion=0; Interface0 Report LED SET_REPORT also completion=0. Physical LED behavior not verified. Cleanup Report requests/release/reattach returned0.
+
+STANDARD USB RESET TESTS (NUT75 ONLY; not the xHCI/controller or another device)
+standard-device-reset-check.log: reset from existing Report1/1 -> GET_PROTOCOL1/1.
+reset-default-from-boot.log: SET_BOOT and verify GET_PROTOCOL0/0 -> reset -> GET_PROTOCOL interface0=0, interface1=1.
+usbmon confirms Linux automatically sends standard SET_CONFIGURATION(1) during reset/reinitialization; no SET_PROTOCOL(BOOT) between reset and those reads. Interface0 retains its pre-reset protocol while Interface1 resets to Report. HID1.11 section7.2.6 says initialized devices default to Report; this is a concrete interface0 protocol-state recovery concern, NOT proof of interface1 Boot input format or the preboot failure mechanism. Boot Keyboard-specific F.3 is not incorrectly applied to the Boot Mouse interface.
+Reset/rebind trace confirms the real Linux driver reads report descriptors and sends SET_IDLE(0), without issuing SET_PROTOCOL in this sequence.
+Final cleanup: SET_PROTOCOL(Report) ACK on both; release/reattach=0; driver/sysfs recovery checked. No final independent GET_PROTOCOL after reattachment and no physical input-recovery acceptance test claimed. No vendor request, firmware flash, controller reset or EFI write.
+
+OFFICIAL WEB DRIVER READ-ONLY SOURCE/CACHE EVIDENCE
+webdriver-settings-evidence.json contains URLs, source hashes and whitelist-only cached fields; no accounts, complete profiles, macros or vendor USB commands.
+NUT75 model: vendor3141/product34828; supported UI report rates1000/4000/8000.
+UI encoding:3=1000Hz,6=8000Hz. Local vendor-origin device-settings cache shows6/3/6/3 transitions, last3=1000Hz; identity version1.40, nkroSwitch0. Cache is NOT live hardware state; nkroSwitch0 meaning on NUT75 unverified.
+Shared NKRO function strings exist, but function support is device-filtered; not evidence of a NUT75 BIOS mode or permission to send hidden vendor commands.
+Unauthenticated exact NUT75 firmware-metadata request returns code0/data null, not proof1.40 is latest or no update exists.
+
+CURRENT CONCLUSION
+User confirmed earlier physical keypresses. Report positive control remains missing, so no actual Boot8-byte correctness/NKRO misformat/routing claim is justified. GET_REPORT STALL and Interface0 protocol persistence across USB reset are measured firmware concerns. Most evidence-backed permanent repair path is a revision-matched WEIKAV Boot-compatible firmware; no such package has been obtained or flashed. Use a known-working keyboard for preboot until repaired; do not present udev/Linux/Limine mouse settings or 1000Hz (already last cached) as an established fix.

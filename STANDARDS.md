@@ -59,7 +59,7 @@
 - 一目录一领域、一文件一关注点；`default.nix` 仅做 imports，每项带职责注释。主机服务参数写在 `configuration.nix` 或对应领域文件，不写在聚合入口。
 - 新增配置优先放入现有对应领域；只有出现独立职责才新建文件。新增模块必须有显式导入路径，禁止自动扫描目录导入，禁止预留空壳。
 - `home/home.nix` 作为最小用户入口，不无条件拉入完整 GUI 和开发工具；这些由选中的 profiles 接入。主机 home 经 `hosts/<machine>/hm.nix` 聚合，显示器/锁屏、性能命令、私有代理按职责分开。
-- 合成器共享配置使用 `home/modules/desktop/umbriel*.nix` 的官方 HM `settings`，TOML 由生成器产生，禁止手写 `config.toml`。显示器形态由主机 home 生成 `umbriel/machine.toml`，运行时 `umbriel config validate` 兜底。
+- 合成器共享配置使用 `home/modules/desktop/umbriel*.nix` 的官方 HM `settings`，TOML 由生成器产生，禁止手写 `config.toml`。显示器形态由主机 home 生成 `umbriel/machine.toml`；`flake/checks.nix` 使用所装合成器同时校验主配置和主机 include，运行时仍用 `umbriel config validate` 兜底。
 - 图形程序的 GUI 状态与声明式配置必须明确各自所有权；提升 GUI 设置到 Nix 后，按程序安全流程清理对应覆盖项，不保留相互竞争的写入者（见现有 Noctalia 迁移说明）。
 - 真实事故记录进 `docs/troubleshooting/`（有事故才写，不预写）。
 

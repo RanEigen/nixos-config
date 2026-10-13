@@ -19,6 +19,8 @@ nr                         # ④ 快照成功后切换；不再次更新输入
       护眼（wlsunset 自动开启）
 - [ ] 变更合规：STANDARDS §4 IM 双作用域两处同步（input-method.nix + umbriel.nix）
 
+Umbriel 启动、护眼服务与图形授权的部署验收见 [会话维护记录](umbriel-maintenance.md)。
+
 ## 历史破坏性变更档案（踩过才记）
 
 ### 2026-08：sops-install-secrets 需现场编译 → Go 模块下载失败

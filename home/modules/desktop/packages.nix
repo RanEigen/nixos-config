@@ -21,7 +21,6 @@
     kdePackages.okular
     # 会话工具
     wl-clipboard
-    wlsunset
     libnotify
     udiskie
     localsend

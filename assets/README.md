@@ -4,7 +4,6 @@
 |---|---|---|
 | `nixos-logo.png` | 终端和启动器图标 | `home/modules/tools/fastfetch.nix`、`home/modules/desktop/noctalia.nix` |
 | `fonts.conf` | 字体回退与渲染 | `home/modules/theme/appearance.nix` |
-| `scripts/toggle-wlsunset` | 护眼切换 | `home/modules/desktop/umbriel.nix` |
 
 新增受版本管理的资产时登记用途和引用方；不在此保存秘密。
 
