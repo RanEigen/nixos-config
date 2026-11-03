@@ -10,7 +10,6 @@ in
   xdg.configFile = {
     "fontconfig/fonts.conf" = {
       source = ../../../assets/fonts.conf;
-      force = true;
     };
     # libadwaita 不读取 gtk-theme-name，通过 CSS 注入主题。
     "gtk-4.0/gtk.css".source =
@@ -30,7 +29,7 @@ in
       package = catppuccinGtk;
     };
     iconTheme = {
-      name = "Papirus-Dark";
+      name = my.desktop.iconTheme;
       package = pkgs.papirus-icon-theme;
     };
     # GTK3/4 不写 im-module；GTK2 仅用于 X11（REF:2026-08-21-fcitx5-gtk）。
@@ -45,6 +44,6 @@ in
     enable = true;
     gtk.enable = true;
     x11.enable = true;
-    size = 30;
+    size = my.desktop.cursorSize;
   };
 }

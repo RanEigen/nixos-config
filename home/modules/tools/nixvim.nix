@@ -1,9 +1,11 @@
 # Neovim 插件、LSP 与键位；接口由 development profile 引入。
-{ my, ... }:
+{ inputs, my, ... }:
 
 {
   programs.nixvim = {
     enable = true;
+    # 与 flake 的 nixvim.nixpkgs follows 保持一致，避免模块默认值重新引入旧 nixpkgs。
+    nixpkgs.source = inputs.nixpkgs;
     defaultEditor = true;
     viAlias = true;
     vimAlias = true;

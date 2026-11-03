@@ -21,7 +21,10 @@
       # 驱动随所选内核配套，覆盖备用内核场景。
       package = config.boot.kernelPackages.nvidiaPackages.latest;
       prime = {
-        offload.enable = true;
+        offload = {
+          enable = true;
+          enableOffloadCmd = true;
+        };
         intelBusId = "PCI:0:2:0";
         nvidiaBusId = "PCI:1:0:0";
       };
@@ -42,8 +45,7 @@
   environment.sessionVariables = {
     WLR_NO_HARDWARE_CURSORS = "1";
     NIXOS_OZONE_WL = "1";
-    GBM_BACKEND = "nvidia-drm";
-    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+    # 不全局强制 NVIDIA；需要独显的程序使用 nvidia-offload 启动。
   };
 
   services.xserver.videoDrivers = [ "nvidia" ];

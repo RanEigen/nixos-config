@@ -10,6 +10,7 @@
     ../modules/desktop-packages.nix # 会话依赖与字体
     ../modules/input-method.nix # 输入法与会话变量
     ../modules/services.nix # 音频与桌面辅助服务
+    ../modules/clash-verge.nix # 代理客户端与系统服务
     ../modules/theme.nix # 系统配色
   ];
 

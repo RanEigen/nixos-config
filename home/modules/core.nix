@@ -17,5 +17,4 @@
   };
   # 系统 nix.conf 提供缓存、超时与秘密 include；此处仅输出用户包策略。
   xdg.configFile."nixpkgs/config.nix".text = lib.generators.toPretty { } my.nixpkgsConfig;
-  xdg.configFile."nix/nix.conf".force = true;
 }

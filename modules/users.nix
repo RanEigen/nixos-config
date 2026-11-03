@@ -23,4 +23,13 @@
     mutableUsers = false;
   };
   programs.fish.enable = true;
+  # 通用用户进程文件句柄软限制，不属于某台机器的 CPU/功耗调优。
+  security.pam.loginLimits = [
+    {
+      domain = "*";
+      type = "soft";
+      item = "nofile";
+      value = "65536";
+    }
+  ];
 }

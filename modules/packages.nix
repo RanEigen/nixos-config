@@ -41,20 +41,8 @@
       strace
       gdb
 
-      # 常见构建工具，方便手动实验
-      gcc
-      gnumake
-      cmake
-      ninja
-      meson
-      pkg-config
-      autoconf
-      automake
-      libtool
-
-      # 脚本与 Nix 编辑辅助
+      # 救援脚本运行时；开发工具链由 development profile 接入。
       python3
-      shellcheck
 
     ];
   };

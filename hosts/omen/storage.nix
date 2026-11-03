@@ -1,8 +1,6 @@
 # 本机 Btrfs 快照策略；fileSystems 仍由硬件生成文件管理。
 {
   config,
-  lib,
-  my,
   ...
 }:
 let
@@ -15,6 +13,11 @@ let
     TIMELINE_LIMIT_WEEKLY = "4";
     TIMELINE_LIMIT_MONTHLY = "3";
     TIMELINE_LIMIT_YEARLY = "1";
+    # 重建快照单独按数量清理；至少保留一天，避免高频重建立即挤掉回滚点。
+    NUMBER_CLEANUP = true;
+    NUMBER_MIN_AGE = "86400";
+    NUMBER_LIMIT = "15";
+    NUMBER_LIMIT_IMPORTANT = "5";
   };
 in
 {
@@ -47,9 +50,4 @@ in
     };
   };
   # .snapshots 必须是子卷；此模块不创建目录或修改现有磁盘布局。
-  home-manager.users.${my.username}.programs.fish.functions.nr.body = lib.mkBefore ''
-    echo "📸 snapper 快照 / + /home ..."
-    sudo snapper -c root create -t single -d "nr before $(date +%Y%m%d-%H%M)"; or return 1
-    sudo snapper -c home create -t single -d "nr before $(date +%Y%m%d-%H%M)"; or return 1
-  '';
 }

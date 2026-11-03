@@ -6,6 +6,6 @@
     ./shell-utils.nix # 通用 CLI 与 shell 集成
     ./monitoring.nix # 终端监控工具
     ./fastfetch.nix # 终端系统信息
-    ./maintenance.nix # 升级与清理入口
+    ./maintenance.nix # 非 Nix 软件升级
   ];
 }

@@ -1,8 +1,6 @@
-# 备用内核；NVIDIA 驱动随 boot.kernelPackages 配套。
+# 标准内核为默认启动；Zen 与 CachyOS 可从启动菜单直接切换。
 { pkgs, ... }:
 {
-  specialisation = {
-    latest.configuration.boot.kernelPackages = pkgs.linuxPackages_latest;
-    lts.configuration.boot.kernelPackages = pkgs.linuxPackages_6_12;
-  };
+  specialisation.zen.configuration.boot.kernelPackages = pkgs.linuxPackages_zen;
+  specialisation.cachyos.configuration.boot.kernelPackages = pkgs.linuxPackages_cachyos;
 }

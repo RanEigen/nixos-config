@@ -8,7 +8,7 @@
     ./xdg.nix # 用户目录与默认应用
     ./mpv.nix # 视频播放
     ./satty.nix # 截图标注
-    ./comfyui.nix # 壁纸 AI 放大（CUDA）
+    ./clash-verge.nix # 代理客户端桌面集成
     ./qq.nix # QQ 与 Wayland 参数
     ./packages.nix # 其他应用与会话工具
   ];

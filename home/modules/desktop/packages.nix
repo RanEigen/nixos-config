@@ -10,7 +10,7 @@
     pi-coding-agent
     codex
     wpsoffice-cn
-    obsidian
+
     wechat
     # KDE 文件与文档工具
     kdePackages.dolphin

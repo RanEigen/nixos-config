@@ -1,9 +1,10 @@
 { pkgs, ... }:
 
 {
-  # HM 提供 y 包装函数，避免手写同名 fish 函数。
   programs.yazi = {
     enable = true;
+    # 直接启动，不注册改变当前 shell 工作目录的包装函数。
+    enableFishIntegration = false;
     # 显式采用新默认 "y"（stateVersion < 26.05 时 HM 默认是 legacy "yy"，会产生弃用警告）
     shellWrapperName = "y";
 
@@ -17,6 +18,7 @@
       };
     };
   };
+  programs.fish.shellAbbrs.y = "yazi";
 
   # yazi 专属预览依赖（仅为本程序存在；通用 CLI 如 fd/ripgrep/jq 在 shell-utils.nix，
   # zoxide 由 programs.zoxide 提供，禁止在此重复声明）

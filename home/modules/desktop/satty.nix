@@ -1,4 +1,5 @@
 # 截图标注与剪贴板交互。
+{ my, ... }:
 {
   programs.satty = {
     enable = true;
@@ -11,10 +12,10 @@
         "actions-on-right-click" = [ "save-to-clipboard" ];
       };
       font = {
-        family = "LXGW Neo XiHei";
+        family = my.fonts.screenshot;
         style = "Regular";
         fallback = [
-          "LXGW Neo XiHei"
+          my.fonts.interface
           "Noto Sans CJK SC"
           "Noto Sans CJK JP"
           "Noto Sans CJK TC"

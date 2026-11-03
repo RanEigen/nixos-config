@@ -83,21 +83,18 @@ in
     vhs
     mediainfo
     # 文本、文件与网络
-    ripgrep
     fd
-    jq
     fx
     sd
     curlie
     tree
     moreutils
     pandoc
-    p7zip
     unrar
     imagemagick
     tree-sitter
     mcat
-    dgop
+    dux-gop
     distrobox
 
   ];

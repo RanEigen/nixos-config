@@ -11,7 +11,7 @@
       enable = true;
       settings = {
         user = {
-          name = my.username;
+          name = my.gitUser;
           email = my.gitEmail;
         };
         init.defaultBranch = "main";
@@ -21,7 +21,11 @@
       enable = true;
       settings.git_protocol = "ssh";
     };
-    lazygit.enable = true;
+    lazygit = {
+      enable = true;
+      # lg 使用显式缩写，不再注册带目录跳转的同名包装函数。
+      enableFishIntegration = false;
+    };
     direnv = {
       enable = true;
       enableFishIntegration = false;
@@ -55,6 +59,20 @@
     max-cache-ttl 7200
   '';
   home.packages = with pkgs; [
+    # 跨项目的手动实验工具；项目所需版本仍由各自 devShell 固定。
+    gcc
+    gnumake
+    cmake
+    ninja
+    meson
+    pkg-config
+    autoconf
+    automake
+    libtool
+    nixd
+    nil
+    nixfmt
+    deadnix
     tinymist
     shellcheck
     tokei

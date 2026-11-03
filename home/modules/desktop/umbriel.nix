@@ -24,9 +24,9 @@ let
     # 合成器作用域环境；系统会话作用域见 modules/input-method.nix。
     # STANDARDS §4：IM 变量双作用域（REF:2026-08-21-fcitx5-gtk）
     environment = {
-      LANGUAGE = "zh_CN:en";
-      LANG = "zh_CN.UTF-8";
-      LC_CTYPE = "en_US.UTF-8"; # 漏字修复（副作用：steam 等 X11 应用可能无法用中文输入法）
+      LANGUAGE = my.locale.language;
+      LANG = my.locale.default;
+      LC_CTYPE = my.locale.cType; # 漏字修复（副作用：steam 等 X11 应用可能无法用中文输入法）
       XMODIFIERS = "@im=fcitx";
       QT_IM_MODULES = "wayland;fcitx"; # Qt6 原生 text-input-v3 优先，fcitx 兜底
       QT_IM_MODULE = "fcitx";

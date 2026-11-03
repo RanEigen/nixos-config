@@ -3,43 +3,36 @@
 单用户 `ran`，当前主机 `omen`（HP OMEN 16-wf0xxx，x86_64-linux）。
 架构与维护规则以 [STANDARDS.md](STANDARDS.md) 为准；尚未验证其他真实机器。
 
-## 配置地图
+## 按需求找配置
 
-```text
-flake.nix                 inputs、主机清单与输出
-config/                   用户身份、工作区路径、包策略、主题数据
-flake/                    本仓 devShell 与质量检查
-profiles/                 base / desktop / development 配置组合
-modules/                  系统领域配置与 Home Manager 接线
-home/                     用户应用、shell 与主题
-hosts/omen/               硬件、引导、存储、性能、显示器
-  proxy/                  dae + Clash + 可独立移除的 fcclient 集成
-assets/                   受版本管理的小资产，以及被忽略的本地媒体
-scripts/                  仓库架构检查
-docs/                     操作、迁移、升级与事故记录
-```
+| 想修改 | 从这里开始 |
+|---|---|
+| 当前主机启用了哪些功能 | `hosts/omen/configuration.nix`、`hosts/omen/default.nix` |
+| 系统服务、网络、软件包 | `modules/`；组合入口见 `profiles/` |
+| 桌面应用、Shell、编辑器、主题 | `home/modules/desktop/`、`home/modules/tools/`、`home/modules/theme/` |
+| OMEN 硬件、引导、存储、性能 | `hosts/omen/` |
+| 用户身份、地理位置等共享偏好、主题数据 | `config/` |
+| 升级与切换 | [升级流程](docs/upgrade-checklist.md) |
+| 代理使用、排障记录 | [代理说明](docs/proxy.md)、`docs/troubleshooting/` |
 
-- 主机选择 profiles；profiles 组合系统和用户模块，不反向引用主机。
-- `base` 不启用桌面、Btrfs 快照、Limine 或私有代理。
-- `config/user.nix` 管理用户身份、仓库绝对路径与 allowUnfree；`config/theme.nix` 管理配色。
-- `stateVersion` 保持系统 `25.05`、home `24.05`，不随版本升级。
-- 新机器从最小入口和目标机生成的硬件配置开始，不复制 OMEN 的 EC、PCI 和显示器设置。
+主机显式选择 profiles；profiles 组合系统和用户模块。共享层不依赖具体主机。新机器应使用目标机硬件配置，不复制 OMEN 的 EC、PCI 或显示器设置。架构约定见 [STANDARDS.md](STANDARDS.md)，迁移记录见[架构整理记录](docs/architecture-migration.md)。
+
+- 依赖具体型号、PCI/USB 标识、磁盘布局、固件或显示器接口 → `hosts/<machine>/`。
+- 不依赖机型的系统能力 → `modules/`，由主机选择的 `profiles/` 启用。
+- 应用配置和用户偏好 → `home/`；跨系统与 Home Manager 共用的用户数据（如所在地）→ `config/user.nix`。
+- `hardware-configuration.nix` 由目标机生成；不能用 OMEN 的 UUID 或设备配置作为新机器模板。
 
 ## 日常操作
 
 ```bash
-nr                  # 本机快照成功后，构建并切换；不更新输入
-nr -u               # 更新输入并重建
-nr -U nixpkgs       # 仅更新指定输入并重建
-nr -n               # nh 干跑；前置快照仍会执行
-
-tg                  # topgrade 升级入口
-clean-system        # nh 清理，保留至少 15 代 / 14 天
-nh os rollback      # 系统回滚
+nix flake update nixpkgs  # 更新指定输入；省略输入名则更新全部
+topgrade                 # 非 Nix 更新
+nh os rollback           # 系统回滚
 ```
 
-`nr` 的通用逻辑在 `home/modules/tools/maintenance.nix`；OMEN 的快照步骤由
-`hosts/omen/storage.nix` 注入，不要求其他主机使用同一磁盘方案。
+重建与升级使用[完整操作流程](docs/upgrade-checklist.md)，不提供包装函数或维护缩写。**直接运行 `nh os switch` 不会自动创建 Snapper 快照**；OMEN 切换前必须显式创建 `/` 和 `/home` 快照，任一步失败即停止。临时补丁的复核条件见[维护例外清单](docs/maintenance-exceptions.md)。
+
+手写 Fish 缩写仅有 `..`、`...`、`ll`、`lg`、`v`、`y`、`clip`、`tg`，插件及约束见 `home/modules/tools/fish.nix` 和 [维护标准](STANDARDS.md)。Nix 生态工具的系统/devShell 归属按对应模块维护。
 
 ## 验证
 
@@ -51,27 +44,24 @@ git diff --cached --check
 nix build .#nixosConfigurations.omen.config.system.build.toplevel --no-link
 ```
 
-- `flake check` 包含格式、deadnix/statix、架构边界及两个组合的求值检查：最小 base、移除 fcclient 后的 OMEN。
-- `--no-build` 仅验证求值；组合检查不启动虚拟机或验证真实硬件。
-- 完整系统构建不代表运行正常。切换后仍需核验登录、输入法、网络、快照及受影响服务。
-- CI 检查 PR/push 的提交差异，不以干净工作区的空 diff 代替检查。
+- `flake check` 包含格式、lint、架构边界及配置组合检查；`--no-build` 不代表检查 derivation 已构建。
+- 完整系统构建不代表运行正常；切换后按改动范围核验服务和功能。详细验证边界见 [STANDARDS.md](STANDARDS.md)。
 
-## 代理与闭源软件隔离
+## 代理
 
-两个客户端均保留，详情见 [代理管理](docs/proxy.md)。
+当前由 GUI 管理 Clash 订阅与代理启停；仓库不配置 dae 或系统级透明代理。TUN 能力须在本机验证，详见[代理说明](docs/proxy.md)。
 
-- `hosts/omen/proxy/settings.nix`：后端地址、端口、接口的唯一定义点。
-- `dae.nix`：透明代理及防火墙，不直接依赖某个客户端。
-- `clash.nix`：Clash 包、核心直连规则与托盘项。
-- `fcclient.nix`：仅包含私有客户端直连规则、会话变量和托盘项；不安装其私有包或创建提权入口。
+## 双显卡
 
-以后移除 `proxy/default.nix` 中 `./fcclient.nix` 的导入，即可解除仓库侧集成。
-**仓库外安装的私有包、运行中进程、GUI 状态与旧系统代际不会因此自动删除**，清理步骤见文档。
+OMEN 保留 Intel + NVIDIA PRIME offload 配置，不全局强制应用选择 NVIDIA。
+需要独显渲染时使用 `nvidia-offload <程序>`；CUDA 应用的设备选择由应用自身管理。
+这不表示单个应用会自动合并两张 GPU 的算力。
+
+运行时需确认两张 GPU 均被 PCI 枚举、存在各自的 DRM 节点。目前检查仅发现 NVIDIA、未发现配置中的 Intel `00:02.0`，
+因此双显卡运行验收尚未完成；即使固件界面显示 Hybrid，也需要进一步核对该设置的实际生效状态。
 
 ## 本地媒体
 
 `assets/wallpapers/`、`assets/VideoWallpapers/`、`assets/nixos-wallpaper/` 保留原位置，
 已取消 Git 跟踪并忽略。它们不进入 flake 源，也不会随 clone 自动恢复；请单独备份。
 受版本管理的小资产用途见 [assets/README.md](assets/README.md)。
-
-架构整理范围与验证状态见 [架构整理记录](docs/architecture-migration.md)。

@@ -18,12 +18,12 @@
 
 1. **秘密永不落明文**：token/密码只进 `secrets/secrets.yaml`（sops 加密），git 只存密文，`/nix/store` 不允许出现明文秘密。
 2. **唯一来源 = 一个语义值一个定义点，多个消费者引用**：同一代理地址/端口、镜像策略、allowUnfree 策略、密码哈希及分区事实不得靠重复字面量保持一致。不同作用域允许分别输出配置，不允许分别维护同一策略值。实现方式：
-   - **用户身份与共享偏好** → 通过 `my` 注入 NixOS/HM（NixOS `specialArgs`、HM `extraSpecialArgs`）。当前保留 `flake.nix` 中的定义；仅在职责需要时提取数据文件，不引入全能常量框架。
+   - **用户身份与共享偏好** → 通过 `my` 注入 NixOS/HM（NixOS `specialArgs`、HM `extraSpecialArgs`），来源为 `config/user.nix`；不引入全能常量框架。
    - **主机事实** → `hosts` 清单或 `hosts/<machine>/`：hostname、hostId、目标 system、引导方式、硬件地址、磁盘布局、私有后端及端口。共享层只消费传入的数据，不硬编码主机标识。只在主机内部使用的值不提升为全局常量。
    - **stateVersion 分开管理**：`systemStateVersion` 属于每台机器，`homeStateVersion` 属于该用户环境的初始化历史；二者不是同一个值，不得为了去重合并。OMEN 当前系统 `25.05`、home `24.05`，结构迁移必须保持不变，禁止随发行版升级。
    - **镜像源/GOPROXY 等网络环境项** → 对应领域模块中的常量；daemon 与客户端引用同一值。`allowUnfree` 在系统、devShell、用户配置中的多个输出引用同一策略。
    - **仓库运行时路径** → 一处定义，编辑器补全、升级工具、重建命令共同引用；不得分别拼接 `${homeDirectory}/nixos-config`。不要把可写工作区路径替换为只读 Store 路径。
-   - **配色** → flavor/accent 只在 `my.catppuccin` 定义一次；静态端口由 `modules/theme.nix`（NixOS）与 `home/modules/theme/`（HM，`catppuccin.nix`/`appearance.nix` 两层）统一启用 `catppuccin/nix`，程序配色一律走其模块接口（`catppuccin.<程序>`），禁止在各程序配置里手写 hex/调色板；派生主题名（fcitx5/GTK）只在 `my.catppuccin.names` 定义。**无 catppuccin 端口的资产**（umbriel 焦点边框/fastfetch/GTK 主题包）统一引用 `my.catppuccin.palette`（Mocha hex 色板，同源派生，换 flavor 时手动同步）。桌面壳 Noctalia 走 `programs.noctalia.settings.theme`：`source = "wallpaper"`（壳层动态取色，保留）固定 `mode = "dark"`，但 `templates.builtin_ids = []`——**模板写回一律禁用**（kitty/gtk/qt/starship 由 catppuccin/nix 与 HM 声明式管理，写回会与之打架，与已废除的 DMS 写回 hack 同构）。锁屏 = Noctalia 内置（PAM 认证走系统 `login` 服务，无需额外配置，2026-09-26）。**中文字体**：`lxgw-neoxihei` 为中文 UI 首选（fontconfig 回退链 + satty 标注字体，family = LXGW Neo XiHei），Noto Sans CJK SC 降为缺字兜底。
+   - **用户身份与个人偏好** → 统一来自 `config/user.nix`，包含配色、字体、语言时区、默认应用与目录；应用模块只消费这些值。有 Catppuccin 端口的程序使用官方模块，无端口的消费者引用共享色板。禁止桌面壳模板写回已由 Nix/HM 管理的文件，避免多个写入者争夺所有权。
    - **禁止**：消费者再次硬编码已有来源的地址/用户名；用 `lib.mkForce` 掩盖本仓重复定义冲突；用 `builtins.getEnv` 读取环境决定系统配置。必须覆盖上游默认值时允许 `mkForce`，但须说明原因（如 §4 输入法修复）。构建依赖必须来自已声明的源码或 Flake 输入。
 3. **不手改生成文件**：`hosts/<machine>/hardware-configuration.nix` 排除自动格式化与源码 lint，但仍必须参加主机求值和构建；变更硬件后重新生成并复核差异，不能以“生成文件”为由跳过配置验证。
 4. **事故说明分层**：模块文件内保留「事故根因 → 防再犯规则」（1-2 句）；完整排查过程、环境、恢复流程移入 `docs/troubleshooting/` 对应文件。模块内不重复完整事故链。
@@ -58,7 +58,7 @@
 - **依赖单向**：主机选择 profiles，profiles 组合 modules/home；共享模块不得导入 `hosts/`，不得按 `hostname == "omen"` 在共享层分支实现主机特例。共享数据通过显式参数传递，不扫描宿主机环境。
 - 一目录一领域、一文件一关注点；`default.nix` 仅做 imports，每项带职责注释。主机服务参数写在 `configuration.nix` 或对应领域文件，不写在聚合入口。
 - 新增配置优先放入现有对应领域；只有出现独立职责才新建文件。新增模块必须有显式导入路径，禁止自动扫描目录导入，禁止预留空壳。
-- `home/home.nix` 作为最小用户入口，不无条件拉入完整 GUI 和开发工具；这些由选中的 profiles 接入。主机 home 经 `hosts/<machine>/hm.nix` 聚合，显示器/锁屏、性能命令、私有代理按职责分开。
+- `home/home.nix` 作为最小用户入口，不无条件拉入完整 GUI 和开发工具；这些由选中的 profiles 接入。主机 home 经 `hosts/<machine>/hm.nix` 聚合；显示器与锁屏配置放在对应主机领域文件。
 - 合成器共享配置使用 `home/modules/desktop/umbriel*.nix` 的官方 HM `settings`，TOML 由生成器产生，禁止手写 `config.toml`。显示器形态由主机 home 生成 `umbriel/machine.toml`；`flake/checks.nix` 使用所装合成器同时校验主配置和主机 include，运行时仍用 `umbriel config validate` 兜底。
 - 图形程序的 GUI 状态与声明式配置必须明确各自所有权；提升 GUI 设置到 Nix 后，按程序安全流程清理对应覆盖项，不保留相互竞争的写入者（见现有 Noctalia 迁移说明）。
 - 真实事故记录进 `docs/troubleshooting/`（有事故才写，不预写）。
@@ -85,12 +85,13 @@
 ## 3. home-manager
 
 - `useGlobalPkgs = true`、`useUserPackages = true`；`extraSpecialArgs = { inherit my; }`（身份/每机常量注入，见 §0.2）。
-- 主机专属 home（依赖某机 CLI/输出形态，如 fish perf-*、umbriel 输出段）由 `hosts/<machine>/hm.nix` 聚合，经
+- 主机专属 home（依赖某机输出形态，如 Umbriel `machine.toml` 显示器布局或 Noctalia 锁屏布局）由 `hosts/<machine>/hm.nix` 聚合，经
   `home-manager.users.<name>.imports = [ ./hm.nix ]` 引入；共享 home 层禁止引用机器专属二进制或私有托盘标识。
-- 重建命令的通用逻辑不得强制依赖 Snapper、固定快照名或 Btrfs；已启用快照保护的主机负责接入本机步骤，快照失败应明确报错，不静默绕过保护。
+- 系统维护使用完整命令，不提供重建缩写；已启用快照保护的主机在操作文档中列出快照步骤，并以失败阻断连接到切换命令。通用基础配置不强制依赖 Snapper 或 Btrfs。
 - `startAsUserService = true` + `systemd.user.services.home-manager.wantedBy = [ "default.target" ]`——上游 #3172 开机竞态的唯一修复，**不要动**。
 - `home.stateVersion` 保持首次使用值，不随 NixOS 版本升。
 - 有官方模块 → `programs.<x>.enable`；纯安装 → `home.packages`；配置文件 → `xdg.configFile`（禁止 `home.file` 指向 `~/.config`）。
+- 手写快捷入口只保留 8 个日常工具缩写（见 README），不额外定义 Git、系统维护或性能快捷包装，也不覆盖 `ls`/`cat` 等标准命令。保留 `git-abbr`、`fish-you-should-use`、`forgit` 及默认功能；插件与 direnv、zoxide、补全等工具自身的函数不属于手写快捷包装。
 
 ### 3.1 包与配置落点（判定树，2026-09 起）
 
@@ -125,33 +126,11 @@
 
 ---
 
-## 4. 输入法环境变量（双作用域是官方写法，不是重复）
+## 4. 输入法环境变量（双作用域）
 
-- fcitx 官方 wiki《Setup Fcitx 5》：IM 变量（`XMODIFIERS`/`QT_IM_MODULE`/`SDL_IM_MODULE`）应在**登录会话环境**设置。
-  Umbriel 的 `[environment]` 会自动发布到 systemd user manager（覆盖合成器 spawn 与 systemd user 服务）；
-  系统会话作用域仍保留以覆盖 greeter/登录 shell 等非合成器场景。两处保留，缺一不可。
-- 落点固定：
-  1. **系统会话作用域** → `modules/locale.nix` 的 `environment.sessionVariables`（统一收 XMODIFIERS / QT_IM_MODULE / SDL_IM_MODULE / GLFW_IM_MODULE）。
-  2. **合成器作用域** → `home/modules/desktop/umbriel.nix` 的 `settings.environment`（2026-09-27 niri→umbriel 迁移）。
-  3. `home.sessionVariables` **不重复** IM 变量（与 /etc/profile 作用域重叠），只留用户专属变量。
-- 🔴 **GTK 输入法只有一条正路（2026-08-21 事故教训）**：Wayland 原生 GTK3/4 走合成器
-  text-input-v3，因此 **GTK3/GTK4 任何形式都不设 im-module**——既不放
-  `GTK_IM_MODULE` 环境变量，也**不放 `gtk3/gtk4.extraConfig` 的 `gtk-im-module`**
-  （settings.ini 该键对 Wayland 与 X11 同时生效，写了就回退内嵌候选框=原皮），
-  还要**主动覆盖官方模块的自动注入**：NixOS fcitx5 模块在其 `environment.variables`
-  里写死 `GTK_IM_MODULE = "fcitx"`（经 /etc/profile→set-environment 喂给所有会话，
-  仓库内 grep 不到）——必须 `environment.variables.GTK_IM_MODULE = lib.mkForce ""`
-  （GTK 空串=未设）才真正关掉。GTK2（仅 X11/XWayland）保留 `gtk-im-module=fcitx`；
-  XWayland GTK3 由 GTK3 内建 XIM 兜底（XMODIFIERS 已设）。完整事故链见
-  docs/troubleshooting/2026-08-21-fcitx5-gtk-im-module-original-skin.md。
-- 🔴 **Qt 输入法双通道（2026-08-21 DMS Spotlight 原皮真根因）**：Qt6 Wayland 应用
-  （quickshell 等 systemd user 服务启动的）只继承会话环境（niri 时代 environment 块喂不到
-  systemd 服务；Umbriel 会发布到 systemd user manager，但系统层仍保留以覆盖 greeter/登录
-  shell）——因此 `QT_IM_MODULES = "wayland;fcitx"`（Qt 6.7+ 官方变量，合成器 text-input-v3
-  优先 → classicui 主题生效）放在系统层 `modules/locale.nix`；`QT_IM_MODULE = "fcitx"`
-  仅兜底 Qt4/5。缺 `QT_IM_MODULES` 时 Qt6 强制走 fcitx-qt 应用内嵌候选框=原皮（本次事故）。
-  umbriel.nix 的 `settings.environment.QT_IM_MODULES` 保留为合成器 spawn 层。
-- 改动 IM 变量时两处同步改（§10 checklist 第 5 项兜底）。
+- 系统登录环境由 `modules/input-method.nix` 管理，合成器环境由 `home/modules/desktop/umbriel.nix` 管理；`home.sessionVariables` 不再重复。两者覆盖范围不同，修改时同步复核并验证 systemd 用户服务。
+- Wayland GTK3/4 不强制 im-module；保留系统模块对上游 `GTK_IM_MODULE` 注入的显式覆盖。Qt 保留 Wayland 优先与旧版兼容通道，不为去重盲删变量。
+- 根因、变量解释与恢复步骤见 [输入法事故记录](docs/troubleshooting/2026-08-21-fcitx5-gtk-im-module-original-skin.md)。具体值以所属模块为准。
 
 ---
 
@@ -163,11 +142,11 @@
 - ⚠️ `.snapshots` 禁止声明为"不挂载"子卷（snapper 会报 IO Error）。
 - 🔴 `.snapshots` 必须是真正的 btrfs 子卷（2026-08-29 实测：普通空目录同样报
   `IO Error (.snapshots is not a btrfs subvolume)`，timeline/快照全部静默失败）。修复前逐一核实挂载、现有子卷和数据；仅在确认路径是空的普通目录后移除并分别创建子卷，禁止用递归删除清理已有快照。
-- **快照保留策略底线**：snapper TIMELINE_LIMIT_* 必须设置（当前：hourly=5, daily=7, weekly=4, monthly=3, yearly=1）。不设保留策略 → btrfs 元数据膨胀 → 空间满后 IO 性能骤降 + metadata 错误（btrfs 活坑）。OMEN 实现在 `hosts/omen/storage.nix`。
+- **快照保留策略底线**：必须显式设置 Snapper timeline 与重建快照的清理策略，避免无界增长。具体保留数量只在 `hosts/omen/storage.nix` 维护。
 - **快照访问权限**：重要子卷（/、/home）的 snapper 配置必须设 `ALLOW_GROUPS = "wheel"`——普通用户无需 sudo 即可只读访问 `.snapshots`，符合直觉。
 - **静默损坏检测**：使用 Btrfs 的主机必须开启 `services.btrfs.autoScrub`（SSD 每月一次，HDD 每季度一次）；scrub 用于检测校验错误，能否修复取决于是否存在可用冗余，不能代替备份。
 - **快照 ≠ 备份**：快照用于本地回滚（后悔药），物理损坏/文件系统崩溃会连带快照消失。核心数据（secrets 私钥、Documents、代码）必须有脱离快照的异地备份（Restic/Borg/U盘/Bitwarden）。secrets 物理私钥必须在外部安全介质保留副本。
-- **Nix Store 血栓预防**：高频试验大型包（CUDA/LLM/桌面组件）会导致 Store 膨胀到 100GB+，挤压快照空间引发 Metadata 错误。必须启用 `nix.gc` 自动清理（保留 7-14 天）+ `nix.optimise.automatic = true` 硬链接去重。配置见 `modules/nix.nix`。
+- **Store 维护**：自动清理与手动入口共用 `modules/nix.nix` 中的代际/时间保留策略，不并行启用两套自动 GC；启用定时 Store 去重。具体周期和数量只在配置中维护。
 
 ---
 
@@ -198,6 +177,7 @@
 - 普通 `nix flake check` 构建暴露在 `checks` 中的检查项，**不自动构建所有 NixOS 系统闭包**。PR 至少完成静态检查与全部主机求值；配置部署前必须构建受影响主机，例如 `nix build .#nixosConfigurations.omen.config.system.build.toplevel --no-link`。
 - 硬件、内核、引导、磁盘、秘密及模块接线变更不得仅凭 lint 合入已验证版本。完整系统构建可本地或 CI 执行，但必须记录命令、目标与结果；因资源限制未运行时明确写“未验证”。
 - CI 逐步增加关键生成配置校验和主机构建，不以建立复杂测试平台阻塞当前整改，不要求接入新的外部服务。
+- 检查优先覆盖行为契约与已知事故，不逐项锁死普通偏好值；不要把文本边界检查扩建成自制 Nix 解析器。
 
 ### 7.3 硬件防误用断言
 
@@ -223,7 +203,7 @@
 
 - rebuild/check 的 warning、error、deprecation 当场处理，不允许带病提交。
 - 升级 NixOS/HM 大版本前读 release notes，逐条核对仓库受影响项。
-- **启动项生存位**：Bootloader 必须保留足够的可回滚代际（OMEN 当前 Limine 菜单保留 `maxGenerations = 3`，受 ESP 容量限制，实现在 `hosts/omen/boot.nix`；其他主机按自身引导方案选择，系统代际档案由 `/nix/var/nix/profiles/system` 保留）。手动 `nix-collect-garbage -d` 会绕过代际保留——禁止在系统微小不稳定时执行，那是自毁长城。
+- **启动项生存位**：Bootloader 必须保留足够的可回滚代际；OMEN 数量由 `hosts/omen/boot.nix` 管理，并受 ESP 容量约束。手动 `nix-collect-garbage -d` 会绕过代际保留，系统不稳定时禁止执行。
 - **驱动更新离线兜底**：涉及核心驱动（Wi-Fi/GPU）的更新，必须在网络环境良好的情况下进行，并确保本地有上一版本的生成记录（可 `nixos-rebuild switch --rollback` 回退）。
 
 ---
@@ -232,6 +212,8 @@
 
 - `nixos-rebuild switch` 验证成功后 `git tag vX.Y.Z`（tag 指向已验证提交）。
 - `main` 唯一长期分支，验证后才提交；应急回滚 = `git checkout vX.Y.Z` → rebuild → 回 main。
+- 输入升级、结构搬移和行为变更分开提交，避免把故障定位与回滚绑定到无关改动。
+- 临时补丁必须注明原因、退出条件及验证方法；清单见 [维护例外](docs/maintenance-exceptions.md)。只登记真实例外，不为普通配置建设额外登记框架。
 
 ---
 
@@ -255,17 +237,7 @@
 
 ## 11. 渐进迁移与验收
 
-下表记录架构审查项目的当前实现状态。代码已拆分不等于构建或运行时验收通过；README 不得提前宣称全面合规。
-
-| 顺序 | 项目与当前实现状态 | 验收要求 |
-|---|---|---|
-| 1 | OMEN 硬件、引导、功耗与 EC 模块已有主机断言 | 构建并核验危险服务的运行时机型保护 |
-| 2 | 引导、存储和主机 Home Manager 已归入 `hosts/omen/`；快照步骤由主机模块注入 | 构建并检查快照、引导与托盘行为；确认通用重建入口不依赖主机存储 |
-| 3 | 代理后端、GOPROXY、allowUnfree、仓库路径及 stateVersion 已有集中定义 | 检查消费者均引用定义点；保持系统 `25.05`、home `24.05` 不变 |
-| 4 | CI 已检查提交范围空白；flake checks 已接入架构边界与组合求值 | 确认 CI 执行结果，并区分求值、检查构建和完整系统构建 |
-| 5 | 大型媒体已从 Git 跟踪中移除，小资产由 `assets/README.md` 登记 | 核对本地媒体备份；不要破坏原文件或 Git 历史 |
-| 6 | flake 开发环境、检查、Home Manager 接线与 profiles 已拆分；主机入口按职责聚合 | 完成受影响主机求值/构建；新组合单独求值，不从 OMEN 结果推断 |
-| 7 | 本轮同步 README、实际文件路径与架构整理记录 | 继续核对标准中的配置事实与注释；不把未验证项目标为完成 |
+当前架构整理项目、实现状态与验收缺口记录在[架构整理记录](docs/architecture-migration.md)。该记录是迁移状态，不替代以下约束；代码拆分不等于构建或运行时验收通过。
 
 迁移纪律：
 
@@ -277,17 +249,9 @@
 
 ---
 
-## 🎯 [OMEN] 本机硬件要点（仅 omen 剖面；事故背书见 troubleshooting）
+## OMEN 硬件参考
 
-- **功耗墙解锁走 omen-rs**（`services.omen` flake module；参数位于 `hosts/omen/omen.nix`）：
-  开机 `omen unlock` + omend hold 看门狗，EC 0xBA 写后读回验证）：
-  底层通道仍是 `ec_sys` 写 EC 寄存器 `0xBA=5`（write_support=1 必须）；TLP 的 PL 配置（键名须 `PL1_LIMIT_ON_AC`，
-  本机仍写不进）、WMAA 固件假 PASS（内核日志 `WMAA/WHCM aborts`）、RAPL 被 EC 实际供电覆盖——全是死路（2026-08-23 事故）。
-- **AC 下 CPU 调速器用 `powersave` + EPP `balance_performance`**（`hosts/omen/performance.nix`）：
-  `performance` governor 在 intel_pstate 下锁最高频（min=max）→ CPU VRM 电感高频开关 →
-  登录桌面后"嗞嗞"线圈啸叫（2026-08-25 实测）；powersave 才是动态调频，重载时 HWP 仍睿频到
-  5.2GHz，PL1/PL2 解锁与 scx_lavd 均不受影响，性能无损。
-- 改功耗/风扇相关配置 → 对照 `docs/troubleshooting/2026-08-23-omen-ec-power-limit-2.5ghz-lock.md`。
+硬件参数只在 `hosts/omen/` 维护；变更前复核 [EC/功耗事故](docs/troubleshooting/2026-08-23-omen-ec-power-limit-2.5ghz-lock.md) 与 [调速器/啸叫事故](docs/troubleshooting/2026-08-25-coil-whine-cpu-governor.md)，不把本机结论提升为通用规则。
 
 ## 文档锚点（有疑问先查这里）
 

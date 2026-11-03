@@ -13,9 +13,8 @@
       '';
 
       # 用户配置优先于 /etc/xdg，必须显式引用同一主题名。
-      # force 接管现有文件；主题插件仍由系统模块安装。
+      # 此文件归 HM 管理，GUI 改动应回写本模块；主题插件仍由系统模块安装。
       "fcitx5/conf/classicui.conf" = {
-        force = true;
         text = ''
           Vertical Candidate List=False
           Font="Noto Sans CJK SC 11"
@@ -43,7 +42,6 @@
 
       # 4. 输入法全局快捷键（Ctrl+Space 切换；Super+Space 让给启动器 Noctalia Launcher）
       "fcitx5/config" = {
-        force = true; # 覆盖 fcitx5 生成的现有配置
         text = ''
           [Hotkey]
           # 按住切换键的修饰键时进行轮换切换

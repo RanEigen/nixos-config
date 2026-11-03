@@ -12,13 +12,9 @@
       ...
     }:
     let
-      withoutPrivate = inputs.self.nixosConfigurations.omen.extendModules {
-        modules = [ { disabledModules = [ ../hosts/omen/proxy/fcclient.nix ]; } ];
-      };
       user = import ../config/user.nix;
       host = inputs.self.nixosConfigurations.omen.config;
       desktopHome = host.home-manager.users.${user.username};
-      privateHome = withoutPrivate.config.home-manager.users.${user.username};
       base = inputs.nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = {
@@ -58,6 +54,30 @@
         };
       };
       checks = {
+        # 检查手写的日常缩写及要求保留的插件，不执行任何展开命令。
+        shell-shortcuts =
+          pkgs.runCommand "shell-shortcuts-check"
+            {
+              nativeBuildInputs = [
+                pkgs.fish
+                pkgs.python3
+              ];
+            }
+            ''
+              export HOME="$TMPDIR/home"
+              mkdir -p "$HOME"
+              python ${../scripts/check-shell.py} ${
+                pkgs.writeText "shell-shortcuts.json" (
+                  builtins.toJSON {
+                    functionNames = builtins.attrNames desktopHome.programs.fish.functions;
+                    abbrs = desktopHome.programs.fish.shellAbbrs;
+                    aliases = desktopHome.programs.fish.shellAliases;
+                    plugins = map (plugin: plugin.name) desktopHome.programs.fish.plugins;
+                  }
+                )
+              }
+              touch "$out"
+            '';
         # 使用所装合成器校验主配置和主机 include；不读取宿主机 ~/.config。
         umbriel-config =
           assert desktopHome.programs.noctalia.systemd.enable;
@@ -89,19 +109,14 @@
           python ${../scripts/check-architecture.py} ${inputs.self}
           touch "$out"
         '';
-        # 求值移除私有客户端后的组合，不安装或运行客户端。
-        proxy-without-fcclient =
-          assert !lib.hasInfix "fcclient" withoutPrivate.config.services.dae.config;
-          assert !(privateHome.home.sessionVariables ? fcproxy_port);
-          assert
-            !(builtins.elem "com.fcclient.app" privateHome.programs.noctalia.settings.widget.tray.pinned);
-          assert builtins.elem pkgs.clash-verge-rev privateHome.home.packages;
-          builtins.deepSeq withoutPrivate.config.system.build.toplevel.drvPath (
-            pkgs.runCommand "proxy-without-fcclient-check" { } ''touch "$out"''
-          );
+        # Clash Verge 的系统包由 NixOS 模块提供，不重复放入 Home Manager。
+        proxy-client =
+          assert host.programs.clash-verge.enable;
+          assert host.programs.clash-verge.package == pkgs.clash-verge-rev;
+          assert !(desktopHome.home.sessionVariables ? fcproxy_port);
+          pkgs.runCommand "proxy-client-check" { } ''touch "$out"'';
         # 验证基础组合可独立求值，不隐含桌面、Btrfs 或主机私有网络。
         base-profile =
-          assert !base.config.services.dae.enable;
           assert base.config.services.snapper.configs == { };
           assert !base.config.i18n.inputMethod.enable;
           assert !base.config.boot.loader.limine.enable;

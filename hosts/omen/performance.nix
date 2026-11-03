@@ -32,12 +32,4 @@
     enable = true;
     memoryPercent = 50;
   };
-  security.pam.loginLimits = [
-    {
-      domain = "*";
-      type = "soft";
-      item = "nofile";
-      value = "65536";
-    }
-  ];
 }

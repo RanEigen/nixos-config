@@ -7,7 +7,7 @@ in
   programs.kitty = {
     enable = true;
     font = {
-      name = "Maple Mono NF CN";
+      name = my.fonts.terminal;
       size = 11.5;
     };
     settings = {
@@ -35,7 +35,7 @@ in
       "ctrl+shift+l" = "next_window";
     };
   };
-  # kitty --session work 由 fish 的 ks 别名调用。
+  # 工作会话按需通过 kitty --session work 启动，不额外注册快捷入口。
   xdg.configFile."kitty/work".text = ''
     new_tab work
     launch --cwd=~ fish

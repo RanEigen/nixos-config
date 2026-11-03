@@ -1,6 +1,16 @@
-# Shell 插件与交互快捷命令；维护入口见 maintenance.nix。
+# Shell 插件与日常工具缩写；系统维护使用完整命令。
 { pkgs, ... }:
 {
+  # OpenCode 2.1.1 的包内补全经管道生成时被截断为 64 KiB，末尾剩下单独的 c。
+  # 直接重定向到普通文件，保留完整补全；上游打包修复后可删除此覆盖。
+  xdg.configFile."fish/completions/opencode.fish".source =
+    pkgs.runCommand "opencode-fish-completions" { }
+      ''
+        export HOME="$TMPDIR"
+        ${pkgs.lib.getExe pkgs.opencode} --completions fish > "$out"
+        ${pkgs.gnugrep}/bin/grep -Fxq '###-end-opencode-completions-###' "$out"
+        ${pkgs.fish}/bin/fish --no-config --no-execute "$out"
+      '';
   programs.fish = {
     enable = true;
     plugins = [
@@ -51,25 +61,16 @@
           end
           set -g __done_min_cmd_duration 10000
           set -g __done_notify_sound 0
-          if type -q eza; alias ls="eza --icons --git"; end
-          if type -q bat; alias cat="bat"; end
-          if type -q lazygit; alias lg="lazygit"; end
-          if type -q nvim; alias v="nvim"; end
-          if type -q kitty; alias ks="kitty --session work"; end
       end
     '';
+    # 手写缩写仅覆盖日常工具；Git 快捷入口交给保留的插件，不重复定义。
     shellAbbrs = {
       tg = "topgrade";
-      gst = "git status";
-      ga = "git add";
-      gc = "git commit";
-      gp = "git push";
-      gpl = "git pull";
-      gl = "git log --oneline --graph";
-      gd = "git diff";
       ".." = "cd ..";
       "..." = "cd ../..";
       ll = "eza -l --icons=auto --git";
+      lg = "lazygit";
+      v = "nvim";
       clip = "wl-copy";
     };
   };

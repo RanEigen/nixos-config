@@ -11,8 +11,6 @@
       shown_boxes = "cpu mem net proc";
     };
   };
-  # 接管首次运行生成的配置，避免 HM 链接冲突。
-  xdg.configFile."btop/btop.conf".force = true;
   programs.cava = {
     enable = true;
     settings.general = {

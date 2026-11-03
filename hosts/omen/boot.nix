@@ -1,4 +1,4 @@
-# 本机 EFI/Limine、默认 Zen 内核及双系统入口。
+# 本机 EFI/Limine、NixOS 标准内核及双系统入口。
 {
   config,
   pkgs,
@@ -9,12 +9,12 @@
   assertions = [
     {
       assertion = config.networking.hostName == "omen";
-      message = "本引导配置包含 OMEN 显示器和 NVIDIA 参数；请移除 hosts/omen/boot.nix 并配置目标机。";
+      message = "本引导配置包含 OMEN 专属 Limine、Windows 启动项及内核参数；请移除此模块并配置目标机。";
     }
   ];
   catppuccin.limine.enable = true;
   boot = {
-    kernelPackages = lib.mkDefault pkgs.linuxPackages_zen;
+    kernelPackages = lib.mkDefault pkgs.linuxPackages;
     tmp = {
       useZram = true;
       cleanOnBoot = true;

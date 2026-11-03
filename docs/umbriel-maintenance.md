@@ -7,7 +7,7 @@
 | 项目 | 处理与边界 |
 |---|---|
 | Noctalia 启动 | 保留 `programs.noctalia.systemd.enable`，删除 Umbriel 中重复的 autostart。上游合成器发布会话环境后启动 `umbriel-session.target`，该 target 拉起 `graphical-session.target`。 |
-| 护眼启动 | `home/modules/desktop/wlsunset.nix` 使用官方 `services.wlsunset`；移除旧脚本、目录部署与重复装包。保留原配置经纬度 36.5 / 128.0 和日夜色温 6500 / 5000 K，不代表已核验用户所在地。经纬度模式不能同时设置 `duration`，故不迁移旧脚本中的 `-d 1800`。 |
+| 护眼启动 | `home/modules/desktop/wlsunset.nix` 使用官方 `services.wlsunset`；经纬度作为用户偏好由 `config/user.nix` 提供，与主机硬件分离。保留原值 36.5 / 128.0 和日夜色温 6500 / 5000 K，不代表已核验用户所在地。经纬度模式不能同时设置 `duration`，故不迁移旧脚本中的 `-d 1800`。 |
 | 配置校验 | `checks.umbriel-config` 使用 NixOS 所装 Umbriel 校验生成的主配置和 `machine.toml`。额外向主机 include 注入未知表，确认校验失败，避免 optional include 被漏检。检查只用声明式输入，不读取运行中的用户配置。 |
 | 图标同源 | `QS_ICON_THEME` 引用 `config.gtk.iconTheme.name`，仍为 Papirus-Dark。 |
 | root 图形授权 | 仓库未发现必须依赖此权限的消费者；删除默认 `xhost +si:localuser:root` 和 xhost 装包。当前会话已有授权不会因改配置立即消失，重新登录后须验证；本轮未改活动会话授权。 |
@@ -30,7 +30,7 @@
 
 ## 部署与运行时验收
 
-先运行 `nr`（不加 `-u`，不再次更新输入），成功后注销并重新登录。保留旧代际，不运行清除旧代际命令。
+按 [完整操作流程](upgrade-checklist.md) 进行检查、快照和切换，省略输入更新步骤，成功后注销并重新登录。保留旧代际，不运行清除旧代际命令。
 
 ```bash
 umbriel config validate

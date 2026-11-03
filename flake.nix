@@ -3,8 +3,7 @@
 
   inputs = {
     nixpkgs.url = "git+https://mirror.nju.edu.cn/git/nixpkgs.git/?ref=nixos-unstable&shallow=1";
-    # ComfyUI 固定版本使用 CUDA 缓存；升级前确认新版本仍可从缓存获取。
-    nixpkgs-comfyui.url = "github:NixOS/nixpkgs/05e3304155398c7834f14e8de927de9b4fb7b0ce";
+    chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
@@ -13,7 +12,10 @@
       url = "github:catppuccin/nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixvim.url = "github:nix-community/nixvim";
+    nixvim = {
+      url = "github:nix-community/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -70,7 +72,7 @@
       ];
       flake = {
         overlays.default = final: _prev: {
-          # sops-nix 兼容项；上游移除旧 builder 引用后删除。
+          # sops-nix 兼容项；退出条件与验证见 docs/maintenance-exceptions.md。
           buildGo125Module = final.buildGoModule;
         };
         nixosConfigurations = inputs.nixpkgs.lib.mapAttrs (
@@ -81,7 +83,10 @@
               inherit inputs;
               my = my // host // { inherit hostname; };
             };
-            modules = [ (./hosts + "/${hostname}") ];
+            modules = [
+              inputs.chaotic.nixosModules.default
+              (./hosts + "/${hostname}")
+            ];
           }
         ) hosts;
       };
