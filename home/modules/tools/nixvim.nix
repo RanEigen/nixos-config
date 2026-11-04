@@ -166,9 +166,8 @@
       lsp = {
         enable = true;
         servers = {
-          # Nix 语言支持（已自动替你处理 nil 服务）
-          nil_ls.enable = true;
-
+          nixd.enable = my.nixLanguageServer == "nixd";
+          nil_ls.enable = my.nixLanguageServer == "nil";
         };
         keymaps.lspBuf = {
           "gd" = {

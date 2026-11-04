@@ -13,6 +13,34 @@
       '';
   programs.fish = {
     enable = true;
+    functions.cat = {
+      description = "Use bat for interactive file viewing, falling back to coreutils cat";
+      body = ''
+        if not status is-interactive
+            command cat $argv
+            return $status
+        end
+
+        command bat --paging=never $argv
+        set -l bat_status $status
+        if test $bat_status -eq 0
+            return 0
+        end
+
+        command cat $argv
+      '';
+    };
+    functions.ls = {
+      description = "Use eza for interactive directory listings";
+      body = ''
+        if not status is-interactive
+            command ls $argv
+            return $status
+        end
+
+        command eza --color=auto --icons=auto $argv
+      '';
+    };
     plugins = [
       {
         name = "transient-fish";
@@ -73,5 +101,28 @@
       v = "nvim";
       clip = "wl-copy";
     };
+  };
+
+  # Bash only receives the wrapper in interactive sessions; scripts keep coreutils cat.
+  programs.bash = {
+    enable = true;
+    initExtra = ''
+      case $- in
+        *i*)
+          ls() {
+            command eza --color=auto --icons=auto "$@"
+          }
+          cat() {
+            command bat --paging=never "$@"
+            local bat_status=$?
+            if (( bat_status == 0 )); then
+              return 0
+            fi
+
+            command cat "$@"
+          }
+          ;;
+      esac
+    '';
   };
 }

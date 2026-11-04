@@ -15,6 +15,10 @@
       nmon
       sysstat
       iperf3
+      doggo
+      mtr
+      tcpdump
+      socat
 
       # 获取源码、查看文件
 
@@ -38,6 +42,8 @@
       file
       binutils
       patchelf
+      pax-utils
+      elfutils
       strace
       gdb
 

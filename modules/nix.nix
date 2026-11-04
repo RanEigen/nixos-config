@@ -16,8 +16,13 @@ in
     nix-update
     nix-du
     nix-tree
+    dix
     nixdoc
     nix-init
+    nix-prefetch
+    nix-eval-jobs
+    hydra-check
+    npc
     nix-output-monitor
     flake-checker
     nix-melt

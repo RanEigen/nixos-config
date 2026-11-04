@@ -96,6 +96,7 @@ in
     mcat
     dux-gop
     distrobox
+    watchexec
 
   ];
   xdg.configFile."onefetch/config.yml".source =

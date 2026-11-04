@@ -5,6 +5,9 @@
   my,
   ...
 }:
+let
+  languageSettings = import ./language-settings.nix { inherit lib pkgs my; };
+in
 {
   programs = {
     git = {
@@ -20,6 +23,13 @@
     gh = {
       enable = true;
       settings.git_protocol = "ssh";
+      extensions = with pkgs; [
+        gh-pr-review
+        gh-poi
+      ];
+    };
+    gh-dash = {
+      enable = true;
     };
     lazygit = {
       enable = true;
@@ -53,34 +63,49 @@
         with-fingerprint = true;
       };
     };
+    delta = {
+      enable = true;
+      enableGitIntegration = true;
+      options = {
+        navigate = true;
+        line-numbers = true;
+        side-by-side = true;
+      };
+    };
   };
   home.file.".gnupg/gpg-agent.conf".text = ''
     default-cache-ttl 1800
     max-cache-ttl 7200
   '';
-  home.packages = with pkgs; [
-    # 跨项目的手动实验工具；项目所需版本仍由各自 devShell 固定。
-    gcc
-    gnumake
-    cmake
-    ninja
-    meson
-    pkg-config
-    autoconf
-    automake
-    libtool
-    nixd
-    nil
-    nixfmt
-    deadnix
-    tinymist
-    shellcheck
-    tokei
-    mold
-    sccache
-    sops
-    age
-    pass
-    pinentry-curses
-  ];
+  # 跨项目的手动实验工具；项目所需版本仍由各自 devShell 固定。
+  home.packages =
+    (with pkgs; [
+      gcc
+      gnumake
+      cmake
+      ninja
+      meson
+      pkg-config
+      autoconf
+      automake
+      libtool
+      nixfmt
+      deadnix
+      tinymist
+      shellcheck
+      tokei
+      mold
+      sccache
+      hyperfine
+      jless
+      yq
+      ouch
+      bear
+      sops
+      age
+      pass
+      pinentry-curses
+    ])
+    ++ languageSettings.packages
+    ++ [ (if my.nixLanguageServer == "nil" then pkgs.nil else pkgs.nixd) ];
 }

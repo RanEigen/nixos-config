@@ -42,9 +42,9 @@ else
   # live ISO：先挂载再进 chroot
   echo "==> 挂载系统分区 ..."
   mkdir -p /mnt
-  mountpoint -q /mnt  || mount -o subvol=@ "$BTRFS" /mnt
+  mountpoint -q /mnt || mount -o subvol=@ "$BTRFS" /mnt
   mkdir -p /mnt/nix /mnt/home /mnt/boot
-  mountpoint -q /mnt/nix  || mount -o subvol=@nix "$BTRFS" /mnt/nix
+  mountpoint -q /mnt/nix || mount -o subvol=@nix "$BTRFS" /mnt/nix
   mountpoint -q /mnt/home || mount -o subvol=@home "$BTRFS" /mnt/home
   mountpoint -q /mnt/boot || mount "$BOOT" /mnt/boot
   chroot /mnt /bin/bash -c 'bash /home/ran/nixos-config/fix-password.sh'

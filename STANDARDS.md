@@ -91,7 +91,7 @@
 - `startAsUserService = true` + `systemd.user.services.home-manager.wantedBy = [ "default.target" ]`——上游 #3172 开机竞态的唯一修复，**不要动**。
 - `home.stateVersion` 保持首次使用值，不随 NixOS 版本升。
 - 有官方模块 → `programs.<x>.enable`；纯安装 → `home.packages`；配置文件 → `xdg.configFile`（禁止 `home.file` 指向 `~/.config`）。
-- 手写快捷入口只保留 8 个日常工具缩写（见 README），不额外定义 Git、系统维护或性能快捷包装，也不覆盖 `ls`/`cat` 等标准命令。保留 `git-abbr`、`fish-you-should-use`、`forgit` 及默认功能；插件与 direnv、zoxide、补全等工具自身的函数不属于手写快捷包装。
+- 手写快捷入口只保留 8 个日常工具缩写（见 README），不额外定义 Git、系统维护或性能快捷包装。交互式 Fish 中 `cat`、`ls` 分别使用 `bat`、`eza`；非交互调用必须回到原生命令，函数内显式检查 `status is-interactive`。保留 `git-abbr`、`fish-you-should-use`、`forgit` 及默认功能；插件与 direnv、zoxide、补全等工具自身的函数不属于手写快捷包装。
 
 ### 3.1 包与配置落点（判定树，2026-09 起）
 

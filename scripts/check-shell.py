@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check custom abbreviations and required plugins without executing shortcuts."""
+"""Check shell abbreviations, interactive wrappers, and required plugins."""
 import json
 import subprocess
 import sys
@@ -13,7 +13,14 @@ def require(condition, message):
 
 config = json.loads(Path(sys.argv[1]).read_text())
 require(not config["aliases"], "Do not register custom aliases")
-require(not config["functionNames"], "Do not register shortcut functions")
+require(
+    set(config["functionNames"]) == {"cat", "ls"},
+    "Only the interactive cat/ls wrappers are allowed",
+)
+for name, body in config["functions"].items():
+    require("status is-interactive" in body["body"], f"{name}: wrapper must be interactive-only")
+require("command cat" in config["functions"]["cat"]["body"], "cat must preserve coreutils fallback")
+require("command ls" in config["functions"]["ls"]["body"], "ls must preserve coreutils fallback")
 expected = {"..", "...", "ll", "lg", "v", "y", "clip", "tg"}
 require(set(config["abbrs"]) == expected, "Only the eight custom daily-tool abbreviations are allowed")
 required_plugins = {"git-abbr", "fish-you-should-use", "forgit"}
@@ -30,4 +37,4 @@ for name, expansion in config["abbrs"].items():
     )
     require(result.returncode == 0, f"{name}: {result.stderr}")
 
-print("Eight custom abbreviations and required plugins checked; plugin shortcuts are preserved.")
+print("Shell wrappers, eight abbreviations, and required plugins checked.")

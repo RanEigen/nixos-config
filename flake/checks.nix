@@ -40,7 +40,11 @@
     {
       treefmt = {
         projectRootFile = "flake.nix";
-        programs.nixfmt.enable = true;
+        programs = {
+          nixfmt.enable = true;
+          shfmt.enable = true;
+          taplo.enable = true;
+        };
         settings.excludes = [ "**/hardware-configuration.nix" ];
       };
       pre-commit.settings = {
@@ -69,6 +73,7 @@
               python ${../scripts/check-shell.py} ${
                 pkgs.writeText "shell-shortcuts.json" (
                   builtins.toJSON {
+                    functions = desktopHome.programs.fish.functions;
                     functionNames = builtins.attrNames desktopHome.programs.fish.functions;
                     abbrs = desktopHome.programs.fish.shellAbbrs;
                     aliases = desktopHome.programs.fish.shellAliases;
