@@ -1,12 +1,20 @@
 # VSCode 扩展与语言设置。
 {
   pkgs,
-  my,
+  userConfig,
+  hostConfig,
   lib,
   ...
 }:
 let
-  languageSettings = import ./language-settings.nix { inherit lib pkgs my; };
+  languageSettings = import ./language-settings.nix {
+    inherit
+      lib
+      pkgs
+      userConfig
+      hostConfig
+      ;
+  };
 in
 {
   programs.vscode = {

@@ -2,11 +2,19 @@
 {
   lib,
   pkgs,
-  my,
+  userConfig,
+  hostConfig,
   ...
 }:
 let
-  languageSettings = import ./language-settings.nix { inherit lib pkgs my; };
+  languageSettings = import ./language-settings.nix {
+    inherit
+      lib
+      pkgs
+      userConfig
+      hostConfig
+      ;
+  };
 in
 {
   programs = {
@@ -14,8 +22,8 @@ in
       enable = true;
       settings = {
         user = {
-          name = my.gitUser;
-          email = my.gitEmail;
+          name = userConfig.user.gitUserName;
+          email = userConfig.user.gitEmail;
         };
         init.defaultBranch = "main";
       };
@@ -107,5 +115,5 @@ in
       pinentry-curses
     ])
     ++ languageSettings.packages
-    ++ [ (if my.nixLanguageServer == "nil" then pkgs.nil else pkgs.nixd) ];
+    ++ [ (if userConfig.preferences.nixLanguageServer == "nil" then pkgs.nil else pkgs.nixd) ];
 }

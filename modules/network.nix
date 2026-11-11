@@ -1,9 +1,9 @@
 # NetworkManager、防火墙与 TCP 策略。
-{ my, ... }:
+{ hostConfig, ... }:
 {
   networking = {
-    hostName = my.hostname;
-    inherit (my) hostId;
+    hostName = hostConfig.hostName;
+    inherit (hostConfig) hostId;
     networkmanager.enable = true;
     firewall.enable = true;
   };

@@ -2,7 +2,7 @@
 {
   pkgs,
   lib,
-  my,
+  userConfig,
   ...
 }:
 let
@@ -22,7 +22,7 @@ in
   ];
 
   # Fn+P 的 Win+R → 网址 → 回车通过启动器匹配此名称；只执行固定命令。
-  home-manager.users.${my.username}.xdg.desktopEntries.nut75-driver = {
+  home-manager.users.${userConfig.user.userName}.xdg.desktopEntries.nut75-driver = {
     name = driverUrl;
     genericName = "NUT75 网页驱动";
     exec = "${lib.getExe pkgs.google-chrome} ${driverUrl}";

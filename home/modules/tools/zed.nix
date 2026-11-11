@@ -1,12 +1,20 @@
 # Zed language servers and shared language preferences.
 {
   pkgs,
-  my,
+  userConfig,
+  hostConfig,
   lib,
   ...
 }:
 let
-  languageSettings = import ./language-settings.nix { inherit lib pkgs my; };
+  languageSettings = import ./language-settings.nix {
+    inherit
+      lib
+      pkgs
+      userConfig
+      hostConfig
+      ;
+  };
 in
 {
   programs.zed-editor = {

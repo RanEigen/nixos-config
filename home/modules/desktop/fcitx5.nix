@@ -1,5 +1,5 @@
 # Fcitx5 / Rime 用户配置；系统接线见 modules/input-method.nix。
-{ my, ... }:
+{ userConfig, ... }:
 
 {
   xdg = {
@@ -19,8 +19,8 @@
           Vertical Candidate List=False
           Font="Noto Sans CJK SC 11"
           MenuFont="Noto Sans CJK SC 10"
-          Theme=${my.catppuccin.names.fcitx5}
-          DarkTheme=${my.catppuccin.names.fcitx5}
+          Theme=${userConfig.preferences.catppuccin.names.fcitx5}
+          DarkTheme=${userConfig.preferences.catppuccin.names.fcitx5}
           UseDarkTheme=True
           PerScreenDPI=True
         '';

@@ -1,5 +1,5 @@
 # 截图标注与剪贴板交互。
-{ my, ... }:
+{ userConfig, ... }:
 {
   programs.satty = {
     enable = true;
@@ -12,10 +12,10 @@
         "actions-on-right-click" = [ "save-to-clipboard" ];
       };
       font = {
-        family = my.fonts.screenshot;
+        family = userConfig.preferences.fonts.screenshot;
         style = "Regular";
         fallback = [
-          my.fonts.interface
+          userConfig.preferences.fonts.interface
           "Noto Sans CJK SC"
           "Noto Sans CJK JP"
           "Noto Sans CJK TC"

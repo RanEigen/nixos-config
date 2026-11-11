@@ -41,6 +41,40 @@
         command eza --color=auto --icons=auto $argv
       '';
     };
+    functions.mkcd = {
+      description = "Create a directory and enter it";
+      body = ''
+        if test (count $argv) -ne 1
+            echo "Usage: mkcd <directory>" >&2
+            return 2
+        end
+
+        mkdir -p -- "$argv[1]"; and cd -- "$argv[1]"
+      '';
+    };
+    functions.gitroot = {
+      description = "Change to the current Git repository root";
+      body = ''
+        set -l root (command git rev-parse --show-toplevel 2>/dev/null)
+        or begin
+            echo "gitroot: not inside a Git repository" >&2
+            return 1
+        end
+
+        cd -- "$root"
+      '';
+    };
+    functions.pickdir = {
+      description = "Find a directory interactively and enter it";
+      body = ''
+        set -l directory (command fd --type d --hidden --exclude .git . | command fzf)
+        or return
+
+        if test -n "$directory"
+            cd -- "$directory"
+        end
+      '';
+    };
     plugins = [
       {
         name = "transient-fish";
@@ -93,11 +127,8 @@
     '';
     # 手写缩写仅覆盖日常工具；Git 快捷入口交给保留的插件，不重复定义。
     shellAbbrs = {
-      tg = "topgrade";
       ".." = "cd ..";
       "..." = "cd ../..";
-      ll = "eza -l --icons=auto --git";
-      lg = "lazygit";
       v = "nvim";
       clip = "wl-copy";
     };

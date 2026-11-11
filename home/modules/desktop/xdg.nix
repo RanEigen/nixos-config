@@ -1,12 +1,12 @@
 # 用户目录与默认应用。
-{ my, ... }:
+{ userConfig, ... }:
 {
   xdg = {
     userDirs = {
       enable = true;
       createDirectories = true;
       setSessionVariables = true;
-      inherit (my.desktop.userDirectories)
+      inherit (userConfig.preferences.desktop.userDirectories)
         desktop
         documents
         download
@@ -19,7 +19,7 @@
     };
     mimeApps = {
       enable = true;
-      defaultApplications = my.desktop.defaultApplications;
+      defaultApplications = userConfig.preferences.desktop.defaultApplications;
     };
   };
 }

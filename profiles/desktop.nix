@@ -1,4 +1,4 @@
-{ inputs, my, ... }:
+{ inputs, userConfig, ... }:
 {
   imports = [
     ./base.nix # 桌面依赖系统基础
@@ -14,7 +14,7 @@
     ../modules/theme.nix # 系统配色
   ];
 
-  home-manager.users.${my.username}.imports = [
+  home-manager.users.${userConfig.user.userName}.imports = [
     inputs.catppuccin.homeModules.catppuccin # 用户主题接口
     inputs.umbriel.homeModules.default # 合成器接口
     ../home/modules/env.nix # 桌面会话环境

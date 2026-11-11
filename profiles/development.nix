@@ -1,11 +1,11 @@
-{ inputs, my, ... }:
+{ inputs, userConfig, ... }:
 {
   imports = [
     ./base.nix # 开发环境依赖系统基础
     ../modules/virtualisation.nix # 容器与 AppImage
   ];
 
-  home-manager.users.${my.username}.imports = [
+  home-manager.users.${userConfig.user.userName}.imports = [
     inputs.nixvim.homeModules.nixvim # Neovim 配置接口
     ../home/modules/tools/dev.nix # Git、direnv 与密钥工具
     ../home/modules/tools/vscode.nix # VSCode

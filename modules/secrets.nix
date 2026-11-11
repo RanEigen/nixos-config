@@ -2,7 +2,8 @@
 {
   config,
   inputs,
-  my,
+  userConfig,
+  hostConfig,
   ...
 }:
 
@@ -23,15 +24,15 @@
 
     # 客户端解析 flake 输入也需要 token，由系统 nix.conf include 此只读片段。
     templates."nix-access-tokens" = {
-      path = my.nixAccessTokensPath;
+      path = hostConfig.nixAccessTokensFile;
       content = "access-tokens = github.com=${config.sops.placeholder.github-token}";
-      owner = my.username;
+      owner = userConfig.user.userName;
       mode = "0400";
     };
   };
 
   # 仅在缺失时预置空文件，避免 include 悬空；不覆盖 sops 生成物。
   systemd.tmpfiles.rules = [
-    "f ${my.nixAccessTokensPath} 0400 ${my.username} users -"
+    "f ${hostConfig.nixAccessTokensFile} 0400 ${userConfig.user.userName} users -"
   ];
 }

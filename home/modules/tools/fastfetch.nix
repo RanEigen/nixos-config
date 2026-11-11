@@ -1,7 +1,7 @@
 # 终端系统信息；颜色与全局主题同源。
-{ my, ... }:
+{ userConfig, ... }:
 let
-  palette = my.catppuccin.palette;
+  palette = userConfig.preferences.catppuccin.palette;
   entry = type: key: keyColor: { inherit type key keyColor; };
 in
 {

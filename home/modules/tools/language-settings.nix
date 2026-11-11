@@ -1,19 +1,20 @@
 {
   lib,
   pkgs,
-  my,
+  userConfig,
+  hostConfig,
 }:
 let
-  nixServer = my.nixLanguageServer;
+  nixServer = userConfig.preferences.nixLanguageServer;
   nixdSettings =
     (import ./nixd.nix {
-      inherit my pkgs;
+      inherit hostConfig pkgs;
       system = pkgs.stdenv.hostPlatform.system;
     })
     // {
       eval.target = {
         args = [ "--impure" ];
-        installable = ".#nixosConfigurations.${my.hostname}.config.system.build.toplevel";
+        installable = ".#nixosConfigurations.${hostConfig.hostName}.config.system.build.toplevel";
       };
     };
   nilSettings = {
@@ -23,6 +24,40 @@ let
       autoEvalInputs = true;
       nixpkgsInputName = "nixpkgs";
     };
+  };
+  nvimServer = {
+    enable = true;
+    # Put the Nix-provided server after the inherited PATH so a project devShell
+    # can supply its own version without losing a global fallback.
+    packageFallback = true;
+  };
+  nvimLspServers = {
+    nixd = nvimServer // {
+      enable = nixServer == "nixd";
+      settings = nixdSettings;
+    };
+    nil_ls = nvimServer // {
+      enable = nixServer == "nil";
+      settings = nilSettings;
+    };
+    rust_analyzer = nvimServer // {
+      # rustc/cargo/rustfmt belong to each project's devShell/toolchain file.
+      installCargo = false;
+      installRustc = false;
+      installRustfmt = false;
+    };
+    gopls = nvimServer;
+    basedpyright = nvimServer;
+    ruff = nvimServer;
+    clangd = nvimServer;
+    tinymist = nvimServer;
+    hls = nvimServer // {
+      # HLS must use the project's GHC from the active devShell.
+      installGhc = false;
+    };
+    bashls = nvimServer;
+    yamlls = nvimServer;
+    taplo = nvimServer;
   };
 in
 {
@@ -41,6 +76,9 @@ in
     tinymist
     shfmt
   ];
+  # Nixvim starts the matching server by filetype/root and resolves its command
+  # through PATH, allowing an activated project devShell to take precedence.
+  inherit nvimLspServers;
 
   vscodeExtensions = with pkgs.vscode-extensions; [
     golang.go

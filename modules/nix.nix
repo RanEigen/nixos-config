@@ -1,7 +1,8 @@
 # Nix 客户端、缓存与 Store 维护。
 {
   inputs,
-  my,
+  userConfig,
+  hostConfig,
   pkgs,
   ...
 }:
@@ -46,24 +47,15 @@ in
         # 显式优先于官方缓存（默认 40）；列表顺序不代表缓存优先级。
         "https://mirror.sjtu.edu.cn/nix-channels/store?priority=20"
         "https://mirror.nju.edu.cn/nix-channels/store?priority=30"
-        "https://devenv.cachix.org"
-        "https://numtide.cachix.org"
-        "https://nix-community.cachix.org"
-        "https://mic92.cachix.org"
-        "https://git-hooks.cachix.org"
+        # Keep the project-specific cache used by the Noctalia Flake input.
         "https://noctalia.cachix.org"
       ];
       trusted-public-keys = [
-        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-        "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
-        "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
-        "mic92.cachix.org-1:gi8IhgiT3CYZnJsaW7fxznzTkMUOn1RY4GmXdT/nXYQ="
-        "git-hooks.cachix.org-1:t3VIYDdXlezkNY1/sRtYKzxMVKTgn+uAR9VWCXHRPeI="
         "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
       ];
       trusted-users = [
         "@wheel"
-        my.username
+        userConfig.user.userName
       ];
       experimental-features = [
         "nix-command"
@@ -76,11 +68,13 @@ in
       min-free = "2G";
       max-free = "8G";
       http2 = false;
-      connect-timeout = 5;
+      connect-timeout = 3;
       stalled-download-timeout = 90;
-      # 代理链路使用较保守的并发，实际收益需在切换后验证。
-      http-connections = 8;
-      max-substitution-jobs = 8;
+      filetransfer-retry-attempts = 2;
+      # High network concurrency for cache lookups and downloads. This can
+      # improve throughput, but increases pressure on caches and the daemon.
+      http-connections = 64;
+      max-substitution-jobs = 32;
       warn-dirty = false;
       max-jobs = "auto";
       cores = 0;
@@ -88,7 +82,7 @@ in
       log-lines = 50;
     };
     extraOptions = ''
-      include ${my.nixAccessTokensPath}
+      include ${hostConfig.nixAccessTokensFile}
     '';
     # sops include 仅在激活后存在；缺失时由 secrets.nix 预置空文件。
     checkAllErrors = false;
@@ -102,7 +96,7 @@ in
   programs = {
     nh = {
       enable = true;
-      flake = my.repository;
+      flake = hostConfig.configurationRepository;
       clean = {
         enable = true;
         dates = "weekly";

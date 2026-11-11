@@ -1,11 +1,11 @@
 # 登录环境的语言、时区与授时；个人 locale 来自 config/user.nix。
-{ my, ... }:
+{ userConfig, ... }:
 {
   i18n = {
-    defaultLocale = my.locale.default;
-    supportedLocales = my.locale.supported;
+    defaultLocale = userConfig.preferences.locale.defaultLocale;
+    supportedLocales = userConfig.preferences.locale.supportedLocales;
   };
-  time.timeZone = my.locale.timeZone;
+  time.timeZone = userConfig.preferences.locale.timeZone;
   time.hardwareClockInLocalTime = false;
   services.timesyncd.servers = [
     "ntp.ntsc.ac.cn"

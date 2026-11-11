@@ -2,11 +2,11 @@
 {
   lib,
   pkgs,
-  my,
+  userConfig,
   ...
 }:
 let
-  palette = my.catppuccin.palette;
+  palette = userConfig.preferences.catppuccin.palette;
 in
 {
   programs = {

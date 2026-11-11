@@ -1,13 +1,13 @@
 # 终端外观与工作会话；模糊由合成器规则提供。
-{ my, ... }:
+{ userConfig, ... }:
 let
-  palette = my.catppuccin.palette;
+  palette = userConfig.preferences.catppuccin.palette;
 in
 {
   programs.kitty = {
     enable = true;
     font = {
-      name = my.fonts.terminal;
+      name = userConfig.preferences.fonts.terminal;
       size = 11.5;
     };
     settings = {

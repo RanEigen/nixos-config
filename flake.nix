@@ -47,7 +47,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     omen-rs = {
-      url = "github:jackockzuo/omen-rs/1ca90bb474dc6b35edc33932c0cb9f3b41cab1be";
+      url = "github:RanEigen/omen-rs/1ca90bb474dc6b35edc33932c0cb9f3b41cab1be";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -55,19 +55,22 @@
   outputs =
     inputs@{ flake-parts, ... }:
     let
-      my = import ./config/user.nix;
-      hosts = {
-        omen = {
-          system = "x86_64-linux";
-          hostId = "007f0200";
-          systemStateVersion = "25.05";
-        };
-      };
+      userConfig = import ./config;
+      hostConfig = import ./hosts/omen/host.nix { inherit userConfig; };
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = [ "x86_64-linux" ];
+      systems = [ hostConfig.system ];
+      perSystem =
+        { system, ... }:
+        {
+          # Use the same nixpkgs configuration in dev shells and checks.
+          _module.args.pkgs = import inputs.nixpkgs {
+            inherit system;
+            config = userConfig.nix.nixpkgsConfig;
+          };
+        };
       imports = [
-        (import ./flake/devshell.nix { inherit inputs my; })
+        ./flake/devshell.nix
         ./flake/checks.nix
       ];
       flake = {
@@ -75,20 +78,18 @@
           # sops-nix 兼容项；退出条件与验证见 docs/maintenance-exceptions.md。
           buildGo125Module = final.buildGoModule;
         };
-        nixosConfigurations = inputs.nixpkgs.lib.mapAttrs (
-          hostname: host:
-          inputs.nixpkgs.lib.nixosSystem {
-            inherit (host) system;
-            specialArgs = {
-              inherit inputs;
-              my = my // host // { inherit hostname; };
-            };
-            modules = [
-              inputs.chaotic.nixosModules.default
-              (./hosts + "/${hostname}")
-            ];
-          }
-        ) hosts;
+        nixosConfigurations.${hostConfig.hostName} = inputs.nixpkgs.lib.nixosSystem {
+          inherit (hostConfig) system;
+          specialArgs = {
+            inherit inputs;
+            inherit userConfig;
+            inherit hostConfig;
+          };
+          modules = [
+            inputs.chaotic.nixosModules.default
+            ./hosts/omen
+          ];
+        };
       };
     };
 }

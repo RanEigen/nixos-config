@@ -2,12 +2,12 @@
 {
   config,
   pkgs,
-  my,
+  userConfig,
   ...
 }:
 {
   users = {
-    users.${my.username} = {
+    users.${userConfig.user.userName} = {
       isNormalUser = true;
       shell = pkgs.fish;
       extraGroups = [

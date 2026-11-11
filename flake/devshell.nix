@@ -1,10 +1,6 @@
-{ inputs, my }:
+{ ... }:
 {
-  perSystem = { system, pkgs, ... }: {
-    _module.args.pkgs = import inputs.nixpkgs {
-      inherit system;
-      config = my.nixpkgsConfig;
-    };
+  perSystem = { pkgs, ... }: {
     devShells = {
       default = pkgs.mkShell {
         packages = with pkgs; [

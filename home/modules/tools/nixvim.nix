@@ -1,5 +1,22 @@
 # Neovim 插件、LSP 与键位；接口由 development profile 引入。
-{ inputs, my, ... }:
+{
+  inputs,
+  userConfig,
+  hostConfig,
+  pkgs,
+  lib,
+  ...
+}:
+let
+  languageSettings = import ./language-settings.nix {
+    inherit
+      lib
+      pkgs
+      userConfig
+      hostConfig
+      ;
+  };
+in
 
 {
   programs.nixvim = {
@@ -28,11 +45,11 @@
       clipboard = "unnamedplus"; # y/p 走系统剪贴板
     };
 
-    # 2. 主题 Catppuccin（flavor 与全局单一来源 my.catppuccin 同步）
+    # 2. 主题 Catppuccin（flavor 与全局单一来源 userConfig.preferences.catppuccin 同步）
     colorschemes.catppuccin = {
       enable = true;
       settings = {
-        flavour = my.catppuccin.flavor;
+        flavour = userConfig.preferences.catppuccin.flavor;
         transparent_background = true;
       };
     };
@@ -165,10 +182,7 @@
       # LSP 服务管理 (无需 Mason，由 Nix 自动管理二进制与依赖)
       lsp = {
         enable = true;
-        servers = {
-          nixd.enable = my.nixLanguageServer == "nixd";
-          nil_ls.enable = my.nixLanguageServer == "nil";
-        };
+        servers = languageSettings.nvimLspServers;
         keymaps.lspBuf = {
           "gd" = {
             action = "definition";

@@ -2,11 +2,12 @@
 {
   pkgs,
   lib,
-  my,
+  userConfig,
   ...
 }:
 {
-  home.stateVersion = my.homeStateVersion;
+  home.homeDirectory = userConfig.user.homeDirectory;
+  home.stateVersion = userConfig.user.homeManagerStateVersion;
   programs.home-manager.enable = true;
   nix = {
     package = lib.mkDefault pkgs.nix;
@@ -16,5 +17,5 @@
     ];
   };
   # 系统 nix.conf 提供缓存、超时与秘密 include；此处仅输出用户包策略。
-  xdg.configFile."nixpkgs/config.nix".text = lib.generators.toPretty { } my.nixpkgsConfig;
+  xdg.configFile."nixpkgs/config.nix".text = lib.generators.toPretty { } userConfig.nix.nixpkgsConfig;
 }

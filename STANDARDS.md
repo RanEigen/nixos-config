@@ -4,7 +4,7 @@
 > 不为尚不存在的需求建设框架，不把个人习惯写成 NixOS 的普遍技术结论。
 >
 > 当前：单主机 `omen`（HP OMEN 16-wf0xxx，x86_64-linux）、单用户 `ran`。
-> 技术栈保持 Flakes + flake-parts + home-manager + sops-nix，主机由 `hosts` 清单驱动。
+> 技术栈保持 Flakes + flake-parts + home-manager + sops-nix；主机事实由 `hosts/<machine>/host.nix` 提供。
 > 目标：**modules/home 提供领域配置，profiles 组合配置，hosts 选择组合并描述机器。**
 > “共享”指不依赖某台机器的身份、硬件与私有后端，不表示支持任意操作系统或 CPU 架构。
 >
@@ -18,12 +18,15 @@
 
 1. **秘密永不落明文**：token/密码只进 `secrets/secrets.yaml`（sops 加密），git 只存密文，`/nix/store` 不允许出现明文秘密。
 2. **唯一来源 = 一个语义值一个定义点，多个消费者引用**：同一代理地址/端口、镜像策略、allowUnfree 策略、密码哈希及分区事实不得靠重复字面量保持一致。不同作用域允许分别输出配置，不允许分别维护同一策略值。实现方式：
-   - **用户身份与共享偏好** → 通过 `my` 注入 NixOS/HM（NixOS `specialArgs`、HM `extraSpecialArgs`），来源为 `config/user.nix`；不引入全能常量框架。
-   - **主机事实** → `hosts` 清单或 `hosts/<machine>/`：hostname、hostId、目标 system、引导方式、硬件地址、磁盘布局、私有后端及端口。共享层只消费传入的数据，不硬编码主机标识。只在主机内部使用的值不提升为全局常量。
-   - **stateVersion 分开管理**：`systemStateVersion` 属于每台机器，`homeStateVersion` 属于该用户环境的初始化历史；二者不是同一个值，不得为了去重合并。OMEN 当前系统 `25.05`、home `24.05`，结构迁移必须保持不变，禁止随发行版升级。
+   - **用户身份** → `config/user.nix`：用户名、家目录、Git 身份、Home Manager 状态版本。通过 `userConfig.user` 注入 NixOS/HM（NixOS `specialArgs`、HM `extraSpecialArgs`）；消费者引用，不重复定义。
+   - **用户偏好** → `config/preferences.nix`：locale/时区、所在地、主题、字体、默认应用、用户目录、编辑器偏好。通过 `userConfig.preferences` 注入；应用模块只消费这些值。
+   - **全局 Nix 策略** → `config/nix-settings.nix`，通过 `userConfig.nix` 注入；例如 `allowUnfree`。系统、devShell 与用户配置中的多个输出必须引用同一策略。
+   - **主机事实与运行时路径** → `hosts/<machine>/host.nix`：hostname、hostId、目标 system、NixOS stateVersion、部署路径。通过 `hostConfig` 注入；共享层只消费传入的数据，不硬编码主机标识。只在主机内部使用的值不提升为全局常量。
+   - **stateVersion 分开管理**：`hostConfig.nixosStateVersion` 属于每台机器，`userConfig.user.homeManagerStateVersion` 属于该用户环境的初始化历史；二者不是同一个值，不得为了去重合并。OMEN 当前系统 `25.05`、home `24.05`，结构迁移必须保持不变，禁止随发行版升级。
    - **镜像源/GOPROXY 等网络环境项** → 对应领域模块中的常量；daemon 与客户端引用同一值。`allowUnfree` 在系统、devShell、用户配置中的多个输出引用同一策略。
-   - **仓库运行时路径** → 一处定义，编辑器补全、升级工具、重建命令共同引用；不得分别拼接 `${homeDirectory}/nixos-config`。不要把可写工作区路径替换为只读 Store 路径。
-   - **用户身份与个人偏好** → 统一来自 `config/user.nix`，包含配色、字体、语言时区、默认应用与目录；应用模块只消费这些值。有 Catppuccin 端口的程序使用官方模块，无端口的消费者引用共享色板。禁止桌面壳模板写回已由 Nix/HM 管理的文件，避免多个写入者争夺所有权。
+   - **仓库运行时路径** → `hostConfig.configurationRepository` 是消费者使用的唯一值；当前由主机配置基于 `userConfig.user.homeDirectory` 派生。编辑器补全、升级工具、重建命令必须引用它，不得各自拼接路径。不要把可写工作区路径替换为只读 Store 路径。
+   - **唯一来源规则**：配置源按上述归属固定；聚合配置必须保留 `user`、`preferences`、`nix` 命名空间，不得平铺合并。已有值在别处尽可能引用；派生值从权威值计算。增加字面量前先搜索现有定义，确认它不是已有值的副本。硬件/显示器/私有服务值仍以对应 `hosts/<machine>/*.nix` 为源。
+   - 有 Catppuccin 端口的程序使用官方模块，无端口的消费者引用 `userConfig.preferences.catppuccin.palette`。禁止桌面壳模板写回已由 Nix/HM 管理的文件，避免多个写入者争夺所有权。
    - **禁止**：消费者再次硬编码已有来源的地址/用户名；用 `lib.mkForce` 掩盖本仓重复定义冲突；用 `builtins.getEnv` 读取环境决定系统配置。必须覆盖上游默认值时允许 `mkForce`，但须说明原因（如 §4 输入法修复）。构建依赖必须来自已声明的源码或 Flake 输入。
 3. **不手改生成文件**：`hosts/<machine>/hardware-configuration.nix` 排除自动格式化与源码 lint，但仍必须参加主机求值和构建；变更硬件后重新生成并复核差异，不能以“生成文件”为由跳过配置验证。
 4. **事故说明分层**：模块文件内保留「事故根因 → 防再犯规则」（1-2 句）；完整排查过程、环境、恢复流程移入 `docs/troubleshooting/` 对应文件。模块内不重复完整事故链。
@@ -33,8 +36,8 @@
 
 ## 1. 架构（主机驱动，显式组合）
 
-- 入口保持 `flake-parts.lib.mkFlake { inherit inputs; }`，由 `hosts` 清单生成 `nixosConfigurations`；保留 `#omen`。当前只支持 `x86_64-linux`，不得宣称已验证其他平台。
-- `flake.nix` 负责 inputs、主机清单与输出接线，不承载桌面设置、硬件调优或大量 HM 配置。开发环境与检查可提取到 `flake/devshell.nix`、`flake/checks.nix`；HM 接线移入独立集成模块。仅在实际提取时创建文件。
+- 入口保持 `flake-parts.lib.mkFlake { inherit inputs; }`，`nixosConfigurations` 的名称与系统从 `hosts/<machine>/host.nix` 引用；保留 `#omen`。当前只支持 `x86_64-linux`，不得宣称已验证其他平台。单主机阶段不建立通用主机注册框架。
+- `flake.nix` 负责 inputs、读取主机事实与输出接线，不承载桌面设置、硬件调优或大量 HM 配置。开发环境与检查可提取到 `flake/devshell.nix`、`flake/checks.nix`；HM 接线移入独立集成模块。仅在实际提取时创建文件。
 - **目标组合链**：`flake → hosts/<machine>/default.nix → configuration.nix → profiles + 主机领域模块`。主机选择 profiles；profiles 导入所需系统模块，并通过 HM 集成导入对应用户模块。
 - **profiles 是普通 NixOS 模块，不是新框架**：基础 `base`、桌面 `desktop`、开发 `development` 按实际职责提取。导入即选择，优先复用官方选项，不生成自定义 enable 开关矩阵。各 profile 的前置依赖必须明确，不依赖 imports 的书写顺序。
 - **最小基础不能隐含完整桌面或存储方案**：Limine/EFI、Zen 内核、Btrfs 挂载点、Snapper 配置、私有代理、GPU/EC 调优由主机显式选择。通用实现可提取复用，但不能在基础入口中无条件启用。
@@ -47,10 +50,10 @@
 
 | 路径 | 职责 | 不得承担 |
 |---|---|---|
-| `flake.nix` / `flake/` | 输入、输出、主机清单、仓库开发与检查 | 桌面细节、硬件调优 |
+| `flake.nix` / `flake/` | 输入、输出接线、仓库开发与检查 | 主机事实定义、桌面细节、硬件调优 |
 | `profiles/` | 组合系统与用户领域模块 | 固定机器事实、重新定义工具配置 |
 | `modules/` | NixOS 系统领域配置与集成 | 反向导入 hosts、默认启用所有能力 |
-| `home/` | 用户身份、应用配置、会话工具 | 固定硬件、私有后端、隐含磁盘布局 |
+| `home/` | 用户偏好消费端、应用配置、会话工具 | 固定硬件、私有后端、隐含磁盘布局、另行定义用户/主机事实 |
 | `hosts/<machine>/` | 主机组合、硬件、存储、引导、私有服务、主机 home | 为其他机器提供隐式基础配置 |
 | `assets/` | 配置需要的小型静态资产 | 个人媒体库、秘密 |
 | `docs/` | 使用、迁移、事故及升级文档 | 代替实际配置或自动检查 |
@@ -84,7 +87,7 @@
 
 ## 3. home-manager
 
-- `useGlobalPkgs = true`、`useUserPackages = true`；`extraSpecialArgs = { inherit my; }`（身份/每机常量注入，见 §0.2）。
+- `useGlobalPkgs = true`、`useUserPackages = true`；通过 `extraSpecialArgs` 注入 `userConfig` 与 `hostConfig`（命名空间及来源见 §0.2），HM 模块只引用，不复制身份、偏好或主机常量。
 - 主机专属 home（依赖某机输出形态，如 Umbriel `machine.toml` 显示器布局或 Noctalia 锁屏布局）由 `hosts/<machine>/hm.nix` 聚合，经
   `home-manager.users.<name>.imports = [ ./hm.nix ]` 引入；共享 home 层禁止引用机器专属二进制或私有托盘标识。
 - 系统维护使用完整命令，不提供重建缩写；已启用快照保护的主机在操作文档中列出快照步骤，并以失败阻断连接到切换命令。通用基础配置不强制依赖 Snapper 或 Btrfs。
